@@ -1,0 +1,8 @@
+out
+cache
+cache-hardhat
+artifacts
+broadcast
+node_modules
+.env
+lib/**/.git

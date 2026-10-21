@@ -1,0 +1,613 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      {
+        "name": "electionManager",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "partyAgentVerification",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "election",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract IElectionManager"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "figuresHashOf",
+    "inputs": [
+      {
+        "name": "puId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getFigures",
+    "inputs": [
+      {
+        "name": "puId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct VoteChainTypes.Figures",
+        "components": [
+          {
+            "name": "registeredVoters",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "accreditedVoters",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "totalVotesCast",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "validVotes",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "rejectedVotes",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "candidateVotes",
+            "type": "uint256[]",
+            "internalType": "uint256[]"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getResult",
+    "inputs": [
+      {
+        "name": "puId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct ResultUpload.PollingUnitResult",
+        "components": [
+          {
+            "name": "exists",
+            "type": "bool",
+            "internalType": "bool"
+          },
+          {
+            "name": "round",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "figures",
+            "type": "tuple",
+            "internalType": "struct VoteChainTypes.Figures",
+            "components": [
+              {
+                "name": "registeredVoters",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "accreditedVoters",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "totalVotesCast",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "validVotes",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "rejectedVotes",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "candidateVotes",
+                "type": "uint256[]",
+                "internalType": "uint256[]"
+              }
+            ]
+          },
+          {
+            "name": "formCid",
+            "type": "string",
+            "internalType": "string"
+          },
+          {
+            "name": "officer",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "submittedAt",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "blockNumber",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "figuresHash",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "hasResult",
+    "inputs": [
+      {
+        "name": "puId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "resubmitResult",
+    "inputs": [
+      {
+        "name": "puId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "figures",
+        "type": "tuple",
+        "internalType": "struct VoteChainTypes.Figures",
+        "components": [
+          {
+            "name": "registeredVoters",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "accreditedVoters",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "totalVotesCast",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "validVotes",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "rejectedVotes",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "candidateVotes",
+            "type": "uint256[]",
+            "internalType": "uint256[]"
+          }
+        ]
+      },
+      {
+        "name": "formCid",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "submissionCount",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "submitResult",
+    "inputs": [
+      {
+        "name": "puId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "figures",
+        "type": "tuple",
+        "internalType": "struct VoteChainTypes.Figures",
+        "components": [
+          {
+            "name": "registeredVoters",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "accreditedVoters",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "totalVotesCast",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "validVotes",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "rejectedVotes",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "candidateVotes",
+            "type": "uint256[]",
+            "internalType": "uint256[]"
+          }
+        ]
+      },
+      {
+        "name": "formCid",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "validateFigures",
+    "inputs": [
+      {
+        "name": "puId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "figures",
+        "type": "tuple",
+        "internalType": "struct VoteChainTypes.Figures",
+        "components": [
+          {
+            "name": "registeredVoters",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "accreditedVoters",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "totalVotesCast",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "validVotes",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "rejectedVotes",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "candidateVotes",
+            "type": "uint256[]",
+            "internalType": "uint256[]"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "rule",
+        "type": "uint8",
+        "internalType": "enum VoteChainTypes.Rule"
+      },
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "actual",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "verification",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract IPartyAgentVerification"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "ResultResubmitted",
+    "inputs": [
+      {
+        "name": "puId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "round",
+        "type": "uint32",
+        "indexed": false,
+        "internalType": "uint32"
+      },
+      {
+        "name": "officer",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "figuresHash",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "formCid",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      },
+      {
+        "name": "timestamp",
+        "type": "uint64",
+        "indexed": false,
+        "internalType": "uint64"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ResultSubmitted",
+    "inputs": [
+      {
+        "name": "puId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "round",
+        "type": "uint32",
+        "indexed": false,
+        "internalType": "uint32"
+      },
+      {
+        "name": "officer",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "figuresHash",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "formCid",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      },
+      {
+        "name": "blockNumber",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "timestamp",
+        "type": "uint64",
+        "indexed": false,
+        "internalType": "uint64"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "EmptyFormCid",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidStatus",
+    "inputs": [
+      {
+        "name": "level",
+        "type": "uint8",
+        "internalType": "enum VoteChainTypes.Level"
+      },
+      {
+        "name": "unitId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "current",
+        "type": "uint8",
+        "internalType": "enum VoteChainTypes.ResultStatus"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "NotPresidingOfficer",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "puId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "PollingUnitCancelled",
+    "inputs": [
+      {
+        "name": "puId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "UnknownUnit",
+    "inputs": [
+      {
+        "name": "level",
+        "type": "uint8",
+        "internalType": "enum VoteChainTypes.Level"
+      },
+      {
+        "name": "unitId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ValidationFailed",
+    "inputs": [
+      {
+        "name": "rule",
+        "type": "uint8",
+        "internalType": "enum VoteChainTypes.Rule"
+      },
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "actual",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "WrongPhase",
+    "inputs": [
+      {
+        "name": "current",
+        "type": "uint8",
+        "internalType": "enum VoteChainTypes.Phase"
+      },
+      {
+        "name": "required",
+        "type": "uint8",
+        "internalType": "enum VoteChainTypes.Phase"
+      }
+    ]
+  }
+]

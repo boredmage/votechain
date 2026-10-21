@@ -1,0 +1,172 @@
+{
+  "assumedBlockGasLimit": 30000000,
+  "assumedBlockTimeSeconds": 12,
+  "blocksNeededThroughputBound": 148,
+  "collationFlowGasTotal": 4429406399,
+  "criticalPathBlocks": 10,
+  "latencyLowerBoundSeconds": 120,
+  "lgas": 33,
+  "parties": 3,
+  "pollingUnits": 4719,
+  "scenario": "full_oyo_state",
+  "submissionsPerBlock": 65,
+  "submissionsPerMinute": 325,
+  "throughputBoundSeconds": 1776,
+  "txTypes": {
+    "admin.addPollingUnit": {
+      "avgGas": 142872,
+      "count": 4719,
+      "maxGas": 184065,
+      "minGas": 140265,
+      "totalGas": 674215796
+    },
+    "admin.addWard": {
+      "avgGas": 98139,
+      "count": 363,
+      "maxGas": 138898,
+      "minGas": 95098,
+      "totalGas": 35624554
+    },
+    "admin.registerPartyAgent": {
+      "avgGas": 150720,
+      "count": 14157,
+      "maxGas": 165766,
+      "minGas": 142966,
+      "totalGas": 2133756176
+    },
+    "admin.registerPresidingOfficer": {
+      "avgGas": 99326,
+      "count": 4719,
+      "maxGas": 99326,
+      "minGas": 99326,
+      "totalGas": 468719394
+    },
+    "agent.signResult.lga": {
+      "avgGas": 133997,
+      "count": 99,
+      "maxGas": 146775,
+      "minGas": 124875,
+      "totalGas": 13265703
+    },
+    "agent.signResult.pu": {
+      "avgGas": 133997,
+      "count": 14157,
+      "maxGas": 146775,
+      "minGas": 124875,
+      "totalGas": 1896995529
+    },
+    "agent.signResult.state": {
+      "avgGas": 133997,
+      "count": 3,
+      "maxGas": 146775,
+      "minGas": 124875,
+      "totalGas": 401991
+    },
+    "agent.signResult.ward": {
+      "avgGas": 133997,
+      "count": 1089,
+      "maxGas": 146775,
+      "minGas": 124875,
+      "totalGas": 145922733
+    },
+    "auditor.verifyAndSign": {
+      "avgGas": 222109,
+      "count": 1,
+      "maxGas": 222109,
+      "minGas": 222109,
+      "totalGas": 222109
+    },
+    "deploy.AuditDeclaration": {
+      "avgGas": 1561679,
+      "count": 1,
+      "maxGas": 1561679,
+      "minGas": 1561679,
+      "totalGas": 1561679
+    },
+    "deploy.CollationEngine": {
+      "avgGas": 2004777,
+      "count": 1,
+      "maxGas": 2004777,
+      "minGas": 2004777,
+      "totalGas": 2004777
+    },
+    "deploy.ElectionManager": {
+      "avgGas": 3881919,
+      "count": 1,
+      "maxGas": 3881919,
+      "minGas": 3881919,
+      "totalGas": 3881919
+    },
+    "deploy.PartyAgentVerification": {
+      "avgGas": 3082414,
+      "count": 1,
+      "maxGas": 3082414,
+      "minGas": 3082414,
+      "totalGas": 3082414
+    },
+    "deploy.ResultUpload": {
+      "avgGas": 1426372,
+      "count": 1,
+      "maxGas": 1426372,
+      "minGas": 1426372,
+      "totalGas": 1426372
+    },
+    "officer.confirmCollation.lga": {
+      "avgGas": 520943,
+      "count": 33,
+      "maxGas": 520977,
+      "minGas": 520909,
+      "totalGas": 17191121
+    },
+    "officer.confirmCollation.state": {
+      "avgGas": 626337,
+      "count": 1,
+      "maxGas": 626337,
+      "minGas": 626337,
+      "totalGas": 626337
+    },
+    "officer.confirmCollation.ward": {
+      "avgGas": 574330,
+      "count": 363,
+      "maxGas": 574715,
+      "minGas": 573945,
+      "totalGas": 208481903
+    },
+    "po.submitResult": {
+      "avgGas": 454749,
+      "count": 4719,
+      "maxGas": 477195,
+      "minGas": 435401,
+      "totalGas": 2145961695
+    },
+    "public.verifyConsistency.lga": {
+      "avgGas": 70095,
+      "count": 1,
+      "maxGas": 70095,
+      "minGas": 70095,
+      "totalGas": 70095
+    },
+    "public.verifyConsistency.state": {
+      "avgGas": 175599,
+      "count": 1,
+      "maxGas": 175599,
+      "minGas": 175599,
+      "totalGas": 175599
+    },
+    "public.verifyConsistency.ward": {
+      "avgGas": 122533,
+      "count": 1,
+      "maxGas": 122533,
+      "minGas": 122533,
+      "totalGas": 122533
+    },
+    "publisher.declareResult": {
+      "avgGas": 337278,
+      "count": 1,
+      "maxGas": 337278,
+      "minGas": 337278,
+      "totalGas": 337278
+    }
+  },
+  "wards": 363
+}

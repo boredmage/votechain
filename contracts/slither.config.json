@@ -1,0 +1,7 @@
+{
+  "filter_paths": "lib|node_modules|test|script",
+  "exclude_informational": true,
+  "exclude_low": false,
+  "detectors_to_exclude": "naming-convention,solc-version,pragma,too-many-digits",
+  "solc_remaps": ["@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/", "forge-std/=lib/forge-std/src/"]
+}

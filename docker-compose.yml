@@ -1,0 +1,136 @@
+# The whole VoteChain demo in one command:
+#
+#   docker compose up -d                         # chain + contracts + demo election + PostgreSQL + API + UI
+#   open http://localhost:5173
+#
+#   DEMO_PREFILL=all docker compose up -d        # seed level: none | lga (default) | all | declared
+#   docker compose down                          # stop; chain state, database and uploads are kept
+#   docker compose down -v && docker compose up -d        # fresh election (wipes chain, database, uploads)
+#   docker compose up -d --build backend frontend         # after changing backend/src or frontend/src
+#   IPFS_PROVIDER=kubo docker compose --profile ipfs up -d   # pin forms to a real IPFS (Kubo) node
+#
+# The containers talk to each other by service name (chain, postgres, backend); the browser reaches the
+# UI on :5173 (nginx, which proxies /api to the backend) and the chain on :8545 (demo signing, MetaMask).
+# Values here are deliberately not read from the repo-root .env: that file holds host-side URLs
+# (127.0.0.1) for the terminal-based workflow in DEVELOPMENT.md.
+
+services:
+  # Local Ethereum node: 70 funded accounts from the public test mnemonic (the seed registers 63
+  # stakeholder wallets). State is dumped to a volume so `docker compose down` / `up` keeps the election.
+  chain:
+    image: ghcr.io/foundry-rs/foundry:stable
+    container_name: votechain-chain
+    entrypoint: ["anvil"]
+    command:
+      - --host=0.0.0.0
+      - --port=8545
+      - --chain-id=31337
+      - --accounts=70
+      - --state=/home/foundry/anvil-state.json
+      - --state-interval=5
+    stop_signal: SIGINT          # anvil writes its final state dump on Ctrl-C
+    ports:
+      - "8545:8545"
+    volumes:
+      - votechain-chain:/home/foundry
+    healthcheck:
+      test: ["CMD", "cast", "chain-id", "--rpc-url", "http://127.0.0.1:8545"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: votechain-postgres
+    environment:
+      POSTGRES_USER: votechain
+      POSTGRES_PASSWORD: votechain
+      POSTGRES_DB: votechain
+    ports:
+      - "5432:5432"
+    volumes:
+      - votechain-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U votechain"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # One-shot job: deploys the five contracts and seeds the demo election, then exits.
+  # Skips itself when the deployment is already on the chain (see contracts/hardhat/bootstrap.js).
+  deployer:
+    build: ./contracts
+    container_name: votechain-deployer
+    environment:
+      LOCAL_RPC_URL: http://chain:8545
+      DEMO_PREFILL: ${DEMO_PREFILL:-lga}
+    volumes:
+      - votechain-deployments:/app/deployments
+    depends_on:
+      chain:
+        condition: service_healthy
+
+  backend:
+    build: ./backend
+    container_name: votechain-backend
+    environment:
+      PORT: 4000
+      CORS_ORIGIN: "*"
+      NETWORK: localhost
+      RPC_URL: http://chain:8545
+      DEPLOYMENT_FILE: /deployments/localhost.json
+      DEMO_ACCOUNTS_FILE: /deployments/demo-accounts.json
+      DATABASE_URL: postgres://votechain:votechain@postgres:5432/votechain
+      INDEXER_POLL_MS: 3000
+      SESSION_TTL_SECONDS: 43200
+      DEMO_MODE: "true"            # serves the public test keys through /api/demo-accounts — local demo only
+      IPFS_PROVIDER: ${IPFS_PROVIDER:-local}
+      IPFS_LOCAL_DIR: /app/data/ipfs
+      KUBO_API_URL: http://ipfs:5001
+      KUBO_GATEWAY_URL: http://ipfs:8080
+      MAX_UPLOAD_BYTES: 15728640
+    ports:
+      - "4000:4000"
+    volumes:
+      - votechain-deployments:/deployments:ro
+      - votechain-uploads:/app/data/ipfs
+    depends_on:
+      deployer:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: votechain-frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Optional real IPFS node:  IPFS_PROVIDER=kubo docker compose --profile ipfs up -d
+  ipfs:
+    image: ipfs/kubo:v0.32.1
+    container_name: votechain-ipfs
+    profiles: ["ipfs"]
+    ports:
+      - "4001:4001"       # swarm
+      - "5001:5001"       # HTTP API (backend uploads)
+      - "8080:8080"       # gateway (form image retrieval)
+    volumes:
+      - votechain-ipfs:/data/ipfs
+    environment:
+      IPFS_PROFILE: server
+    restart: unless-stopped
+
+volumes:
+  votechain-chain:
+  votechain-pg:
+  votechain-deployments:
+  votechain-uploads:
+  votechain-ipfs:

@@ -1,0 +1,172 @@
+{
+  "assumedBlockGasLimit": 30000000,
+  "assumedBlockTimeSeconds": 12,
+  "blocksNeededThroughputBound": 19,
+  "collationFlowGasTotal": 564157894,
+  "criticalPathBlocks": 10,
+  "latencyLowerBoundSeconds": 120,
+  "lgas": 5,
+  "parties": 3,
+  "pollingUnits": 600,
+  "scenario": "large_five_lgas",
+  "submissionsPerBlock": 66,
+  "submissionsPerMinute": 330,
+  "throughputBoundSeconds": 228,
+  "txTypes": {
+    "admin.addPollingUnit": {
+      "avgGas": 142260,
+      "count": 600,
+      "maxGas": 184065,
+      "minGas": 140265,
+      "totalGas": 85356067
+    },
+    "admin.addWard": {
+      "avgGas": 97868,
+      "count": 50,
+      "maxGas": 138898,
+      "minGas": 95098,
+      "totalGas": 4893437
+    },
+    "admin.registerPartyAgent": {
+      "avgGas": 150332,
+      "count": 1800,
+      "maxGas": 164990,
+      "minGas": 142966,
+      "totalGas": 270598033
+    },
+    "admin.registerPresidingOfficer": {
+      "avgGas": 99326,
+      "count": 600,
+      "maxGas": 99326,
+      "minGas": 99326,
+      "totalGas": 59595600
+    },
+    "agent.signResult.lga": {
+      "avgGas": 133997,
+      "count": 15,
+      "maxGas": 146775,
+      "minGas": 124875,
+      "totalGas": 2009955
+    },
+    "agent.signResult.pu": {
+      "avgGas": 133997,
+      "count": 1800,
+      "maxGas": 146775,
+      "minGas": 124875,
+      "totalGas": 241194600
+    },
+    "agent.signResult.state": {
+      "avgGas": 133997,
+      "count": 3,
+      "maxGas": 146775,
+      "minGas": 124875,
+      "totalGas": 401991
+    },
+    "agent.signResult.ward": {
+      "avgGas": 133997,
+      "count": 150,
+      "maxGas": 146775,
+      "minGas": 124875,
+      "totalGas": 20099550
+    },
+    "auditor.verifyAndSign": {
+      "avgGas": 218354,
+      "count": 1,
+      "maxGas": 218354,
+      "minGas": 218354,
+      "totalGas": 218354
+    },
+    "deploy.AuditDeclaration": {
+      "avgGas": 1561679,
+      "count": 1,
+      "maxGas": 1561679,
+      "minGas": 1561679,
+      "totalGas": 1561679
+    },
+    "deploy.CollationEngine": {
+      "avgGas": 2004777,
+      "count": 1,
+      "maxGas": 2004777,
+      "minGas": 2004777,
+      "totalGas": 2004777
+    },
+    "deploy.ElectionManager": {
+      "avgGas": 3881923,
+      "count": 1,
+      "maxGas": 3881923,
+      "minGas": 3881923,
+      "totalGas": 3881923
+    },
+    "deploy.PartyAgentVerification": {
+      "avgGas": 3082414,
+      "count": 1,
+      "maxGas": 3082414,
+      "minGas": 3082414,
+      "totalGas": 3082414
+    },
+    "deploy.ResultUpload": {
+      "avgGas": 1426372,
+      "count": 1,
+      "maxGas": 1426372,
+      "minGas": 1426372,
+      "totalGas": 1426372
+    },
+    "officer.confirmCollation.lga": {
+      "avgGas": 505602,
+      "count": 5,
+      "maxGas": 505607,
+      "minGas": 505598,
+      "totalGas": 2528011
+    },
+    "officer.confirmCollation.state": {
+      "avgGas": 476042,
+      "count": 1,
+      "maxGas": 476042,
+      "minGas": 476042,
+      "totalGas": 476042
+    },
+    "officer.confirmCollation.ward": {
+      "avgGas": 556020,
+      "count": 50,
+      "maxGas": 556072,
+      "minGas": 555969,
+      "totalGas": 27801034
+    },
+    "po.submitResult": {
+      "avgGas": 448485,
+      "count": 600,
+      "maxGas": 473314,
+      "minGas": 431520,
+      "totalGas": 269091079
+    },
+    "public.verifyConsistency.lga": {
+      "avgGas": 61610,
+      "count": 1,
+      "maxGas": 61610,
+      "minGas": 61610,
+      "totalGas": 61610
+    },
+    "public.verifyConsistency.state": {
+      "avgGas": 32254,
+      "count": 1,
+      "maxGas": 32254,
+      "minGas": 32254,
+      "totalGas": 32254
+    },
+    "public.verifyConsistency.ward": {
+      "avgGas": 112066,
+      "count": 1,
+      "maxGas": 112066,
+      "minGas": 112066,
+      "totalGas": 112066
+    },
+    "publisher.declareResult": {
+      "avgGas": 337278,
+      "count": 1,
+      "maxGas": 337278,
+      "minGas": 337278,
+      "totalGas": 337278
+    }
+  },
+  "wards": 50
+}

@@ -1,0 +1,23 @@
+{
+  "name": "votechain",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VoteChain — blockchain-based electoral result collation and multi-party verification with hierarchical validation (Oyo State case study)",
+  "scripts": {
+    "install:all": "npm --prefix contracts install && npm --prefix backend install && npm --prefix frontend install",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:reset": "docker compose down -v && docker compose up -d --build",
+    "docker:logs": "docker compose logs -f deployer backend frontend",
+    "abi": "node scripts/export-abis.mjs",
+    "report": "node scripts/benchmark-report.mjs",
+    "chain": "npm --prefix contracts run node",
+    "deploy:local": "npm --prefix contracts run deploy:local",
+    "seed:local": "npm --prefix contracts run seed:local:prefill",
+    "reset": "node scripts/reset-dev.mjs",
+    "backend": "npm --prefix backend run dev",
+    "frontend": "npm --prefix frontend run dev",
+    "test:contracts": "npm --prefix contracts test",
+    "test:backend": "npm --prefix backend test"
+  }
+}

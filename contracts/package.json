@@ -1,0 +1,30 @@
+{
+  "name": "votechain-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VoteChain smart contracts: blockchain-based electoral result collation with hierarchical multi-party verification (Oyo State case study)",
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "test:gas": "REPORT_GAS=true hardhat test",
+    "node": "hardhat node",
+    "deploy:local": "hardhat run hardhat/deploy.js --network localhost",
+    "seed:local": "hardhat run hardhat/seed-demo.js --network localhost",
+    "seed:local:prefill": "DEMO_PREFILL=1 hardhat run hardhat/seed-demo.js --network localhost",
+    "simulate:local": "hardhat run hardhat/simulate.js --network localhost",
+    "deploy:sepolia": "hardhat run hardhat/deploy.js --network sepolia",
+    "verify:sepolia": "hardhat run hardhat/verify.js --network sepolia",
+    "abi": "node ../scripts/export-abis.mjs",
+    "slither": "slither . --filter-paths lib,node_modules --exclude-dependencies --config-file slither.config.json",
+    "forge:test": "forge test",
+    "forge:benchmark": "forge test --match-contract BenchmarkTest -vv",
+    "forge:benchmark:full": "VOTECHAIN_FULL_SCALE=1 forge test --match-test test_fullOyoState -vv"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.1.0",
+    "dotenv": "^16.4.5",
+    "hardhat": "^2.22.17"
+  }
+}
