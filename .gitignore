@@ -19,3 +19,8 @@ frontend/e2e/screenshots
 
 *.log
 .DS_Store
+
+# deploy.sh (VPS) settings, their backups, and data backups
+.env.prod
+.env.prod.bak.*
+backups/

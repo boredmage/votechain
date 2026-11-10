@@ -1,0 +1,167 @@
+# Production stack for the VPS, behind the GLOBAL Caddy on the shared `web` Docker network.
+# Used by deploy.sh; the plain docker-compose.yml stays the local one-command demo.
+#
+#   ./deploy.sh             # first run asks for the domain, then builds + (re)starts
+#   ./deploy.sh --pull      # git pull, rebuild, restart
+#
+# Only the API and the dashboard join `web`; the chain, PostgreSQL and IPFS have no public port and
+# no route from Caddy. The browser reaches the chain through the API's filtered /api/rpc endpoint.
+# Global Caddyfile (deploy.sh prints these with your domain):
+#
+#     api.example.com {
+#         reverse_proxy votechain-api:4000
+#     }
+#     dashboard.example.com {
+#         reverse_proxy votechain-dashboard:80
+#     }
+#
+# Values like ${PUBLIC_API_URL} come from .env.prod (written by deploy.sh, which passes --env-file).
+# The repo-root .env is left alone: it belongs to the terminal workflow in DEVELOPMENT.md.
+name: votechain-prod
+
+services:
+  # Local Ethereum node (Anvil): 70 funded accounts from the public test mnemonic. State is dumped to
+  # a volume so restarts keep the election. Internal network only.
+  chain:
+    image: ghcr.io/foundry-rs/foundry:stable
+    container_name: votechain-prod-chain
+    entrypoint: ["anvil"]
+    command:
+      - --host=0.0.0.0
+      - --port=8545
+      - --chain-id=31337
+      - --accounts=70
+      - --state=/home/foundry/anvil-state.json
+      - --state-interval=5
+    stop_signal: SIGINT          # anvil writes its final state dump on Ctrl-C
+    volumes:
+      - chain:/home/foundry
+    healthcheck:
+      test: ["CMD", "cast", "chain-id", "--rpc-url", "http://127.0.0.1:8545"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    networks: [internal]
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: votechain-prod-postgres
+    environment:
+      POSTGRES_USER: votechain
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set: run ./deploy.sh setup}"
+      POSTGRES_DB: votechain
+    volumes:
+      - pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U votechain"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [internal]
+    restart: unless-stopped
+
+  # One-shot job: deploys the five contracts and seeds the demo election, then exits.
+  # Skips itself when the deployment is already on the chain (contracts/hardhat/bootstrap.js).
+  deployer:
+    build: ./contracts
+    image: votechain-deployer
+    container_name: votechain-prod-deployer
+    environment:
+      LOCAL_RPC_URL: http://chain:8545
+      DEMO_PREFILL: ${DEMO_PREFILL:-lga}
+    volumes:
+      - deployments:/app/deployments
+    depends_on:
+      chain:
+        condition: service_healthy
+    networks: [internal]
+
+  backend:
+    build: ./backend
+    image: votechain-api
+    container_name: votechain-api
+    environment:
+      PORT: 4000
+      # Only the dashboard is a browser client
+      CORS_ORIGIN: "${DASHBOARD_URL:?DASHBOARD_URL is not set: run ./deploy.sh setup}"
+      NETWORK: localhost
+      RPC_URL: http://chain:8545
+      DEPLOYMENT_FILE: /deployments/localhost.json
+      DEMO_ACCOUNTS_FILE: /deployments/demo-accounts.json
+      DATABASE_URL: "postgres://votechain:${POSTGRES_PASSWORD}@postgres:5432/votechain"
+      INDEXER_POLL_MS: 3000
+      SESSION_TTL_SECONDS: 43200
+      # true serves the PUBLIC test keys through /api/demo-accounts for the role switcher
+      DEMO_MODE: "${DEMO_MODE:-true}"
+      IPFS_PROVIDER: ${IPFS_PROVIDER:-local}
+      IPFS_LOCAL_DIR: /app/data/ipfs
+      KUBO_API_URL: http://ipfs:5001
+      KUBO_GATEWAY_URL: http://ipfs:8080
+      PINATA_JWT: ${PINATA_JWT:-}
+      PINATA_GATEWAY_URL: ${PINATA_GATEWAY_URL:-https://gateway.pinata.cloud}
+      MAX_UPLOAD_BYTES: 15728640
+    volumes:
+      - deployments:/deployments:ro
+      - uploads:/app/data/ipfs
+    depends_on:
+      deployer:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal   # chain, postgres, ipfs
+      - web        # Caddy: api.<domain> -> votechain-api:4000
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Baked into the bundle at build time: what the *browser* calls
+        VITE_API_URL: "${PUBLIC_API_URL:?PUBLIC_API_URL is not set: run ./deploy.sh setup}"
+        VITE_RPC_URL: "${PUBLIC_API_URL}/api/rpc"
+        VITE_CHAIN_ID: 31337
+        VITE_NETWORK: localhost
+        VITE_DEMO_MODE: "${DEMO_MODE:-true}"
+    image: votechain-dashboard
+    container_name: votechain-dashboard
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal   # nginx.conf also proxies same-origin /api to backend:4000
+      - web        # Caddy: dashboard.<domain> -> votechain-dashboard:80
+    restart: unless-stopped
+
+  # Optional real IPFS node: set IPFS_PROVIDER=kubo and COMPOSE_PROFILES=ipfs in .env.prod
+  ipfs:
+    image: ipfs/kubo:v0.32.1
+    container_name: votechain-prod-ipfs
+    profiles: ["ipfs"]
+    volumes:
+      - ipfs:/data/ipfs
+    environment:
+      IPFS_PROFILE: server
+    networks: [internal]
+    restart: unless-stopped
+
+volumes:
+  # Fixed names so the data never depends on the project name or checkout path
+  chain:
+    name: votechain-prod-chain
+  pg:
+    name: votechain-prod-pg
+  deployments:
+    name: votechain-prod-deployments
+  uploads:
+    name: votechain-prod-uploads
+  ipfs:
+    name: votechain-prod-ipfs
+
+networks:
+  internal:
+    driver: bridge
+  # The pre-existing shared network the global Caddy container is on:  docker network create web
+  web:
+    external: true

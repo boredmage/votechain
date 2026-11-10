@@ -112,6 +112,36 @@ node ../scripts/benchmark-report.mjs        # regenerates docs/EVALUATION.md
 cd ../backend && npm test                   # CID + local IPFS provider unit tests
 ```
 
+## Deploying to a VPS (behind an existing Caddy)
+
+The API is served on `api.<domain>` and the dashboard on `dashboard.<domain>`. It needs Docker, DNS
+for both hostnames pointing at the server, and a global Caddy container on the `web` network.
+
+```bash
+git clone <repo> && cd votechain
+./deploy.sh        # first run asks for the domain and options, writes .env.prod, builds, deploys + seeds
+```
+
+Then add the two blocks it prints to the Caddyfile and reload Caddy:
+
+```
+api.example.com {
+    reverse_proxy votechain-api:4000
+}
+dashboard.example.com {
+    reverse_proxy votechain-dashboard:80
+}
+```
+
+The stack is `docker-compose.prod.yml`. The chain, PostgreSQL and IPFS stay on an internal network
+with no public port. The browser reaches the chain through `https://api.<domain>/api/rpc`, which
+forwards only standard read methods and `eth_sendRawTransaction`, never Anvil's `anvil_*`/`evm_*`
+methods or unlocked-account signing. Later: `./deploy.sh --pull` (update, the election is kept),
+`./deploy.sh reset` (fresh election), `./deploy.sh backup`, `./deploy.sh rollback`, `./deploy.sh down`.
+
+Demo mode (on by default) serves the public test-mnemonic keys for the role switcher, so anyone with
+the link can act as any official: fine for a demonstration, not for a real election.
+
 ## Deploying to Sepolia
 
 ```bash

@@ -7,6 +7,7 @@ import { electionRouter } from "./routes/election.js";
 import { ipfsRouter, ipfsProvider } from "./routes/ipfs.js";
 import { authRouter } from "./routes/auth.js";
 import { feedsRouter } from "./routes/feeds.js";
+import { rpcRouter } from "./routes/rpc.js";
 import { indexer } from "./indexer.js";
 
 export function createApp() {
@@ -29,6 +30,7 @@ export function createApp() {
   app.use("/api", electionRouter);
   app.use("/api/ipfs", ipfsRouter);
   app.use("/api/auth", authRouter);
+  app.use("/api/rpc", rpcRouter);
   app.use("/api", feedsRouter);
 
   app.use((_req, res) => res.status(404).json({ error: "not found" }));
