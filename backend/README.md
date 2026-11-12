@@ -1,4 +1,4 @@
-# VoteChain backend
+# ClearCount backend
 
 Node ≥ 18 · Express · ethers v6 · pg · multer. `npm install && npm run dev` (http://localhost:4000/api).
 

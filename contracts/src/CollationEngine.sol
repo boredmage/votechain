@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { VoteChainTypes as T } from "./VoteChainTypes.sol";
+import { ClearCountTypes as T } from "./ClearCountTypes.sol";
 import {
     IElectionManager,
     IPartyAgentVerification,
     IResultUpload,
     ICollationEngine
-} from "./interfaces/IVoteChain.sol";
+} from "./interfaces/IClearCount.sol";
 
 /// @title CollationEngine
 /// @notice Hierarchical aggregation from polling units through wards and LGAs to the state level

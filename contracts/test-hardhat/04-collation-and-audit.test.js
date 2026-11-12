@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { activeVoteChain, loadFixture, toFigures, Level, STATE_UNIT_ID } = require("./fixture");
+const { activeClearCount, loadFixture, toFigures, Level, STATE_UNIT_ID } = require("./fixture");
 const { ResultStatus, Phase, figures } = require("../hardhat/lib");
 
 const STATE = Number(STATE_UNIT_ID);
@@ -8,7 +8,7 @@ const Field = { RegisteredVoters: 0, AccreditedVoters: 1, TotalVotesCast: 2, Val
 
 describe("CollationEngine — hierarchical aggregation (Figure 3.2)", function () {
   it("blocks ward collation until every polling unit is approved", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await ctx.approvePu(1);
     await ctx.submitPu(2);
     const [agg, complete, blocking] = await ctx.collation.computeAggregate(Level.Ward, 1);
@@ -20,7 +20,7 @@ describe("CollationEngine — hierarchical aggregation (Figure 3.2)", function (
   });
 
   it("computes the exact field-by-field sum and excludes cancelled units", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await ctx.approvePu(1);
     await (await ctx.election.connect(ctx.admin).cancelPollingUnit(2, "bafy-cancel")).wait();
     const [agg, complete] = await ctx.collation.computeAggregate(Level.Ward, 1);
@@ -31,7 +31,7 @@ describe("CollationEngine — hierarchical aggregation (Figure 3.2)", function (
   });
 
   it("records a MismatchAlert and keeps the collation blocked when the declared total is manipulated", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await ctx.approvePu(1);
     await ctx.approvePu(2);
     const [agg] = await ctx.collation.computeAggregate(Level.Ward, 1);
@@ -60,7 +60,7 @@ describe("CollationEngine — hierarchical aggregation (Figure 3.2)", function (
   });
 
   it("only the responsible officer collates and no level can be skipped", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     for (let pu = 1; pu <= 4; pu++) await ctx.approvePu(pu);
     const [agg] = await ctx.collation.computeAggregate(Level.Ward, 1);
     await expect(ctx.collation.connect(ctx.wardCo[2]).confirmCollation(Level.Ward, 1, toFigures(agg), "cid")).to.be.revertedWithCustomError(
@@ -77,7 +77,7 @@ describe("CollationEngine — hierarchical aggregation (Figure 3.2)", function (
   });
 
   it("runs the full chain to an approved state result that anyone can re-verify", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await ctx.runToStateApproved();
     expect(Number(await ctx.status(Level.State, STATE))).to.equal(ResultStatus.Approved);
     const state = await ctx.collation.getFigures(Level.State, STATE);
@@ -93,13 +93,13 @@ describe("CollationEngine — hierarchical aggregation (Figure 3.2)", function (
 
 describe("AuditDeclaration — auditor gate and final declaration", function () {
   it("the publisher cannot declare before the auditor signs", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await ctx.runToStateApproved();
     await expect(ctx.audit.connect(ctx.publisher).declareResult()).to.be.revertedWithCustomError(ctx.audit, "AuditNotApproved");
   });
 
   it("only a signature from the registered auditor is accepted", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await ctx.runToStateApproved();
     const digest = await ctx.audit.auditDigest();
     const impostorSig = await ctx.stranger.signMessage(ethers.getBytes(digest));
@@ -110,7 +110,7 @@ describe("AuditDeclaration — auditor gate and final declaration", function () 
   });
 
   it("records the audit, then the publisher declares and the election becomes Declared", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await ctx.runToStateApproved();
     const sig = await ctx.auditorSignature();
     await expect(ctx.audit.verifyAndSign(sig, "bafy-report")).to.emit(ctx.audit, "AuditApproved");
@@ -133,7 +133,7 @@ describe("AuditDeclaration — auditor gate and final declaration", function () 
   });
 
   it("pending escalations block the audit until the auditor rules", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     const { verification, agents, po, auditor } = ctx;
     await ctx.submitPu(1);
     await (await verification.connect(agents[Level.PollingUnit][1][1]).raiseDispute(Level.PollingUnit, 1, "r", "")).wait();

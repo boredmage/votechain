@@ -3,8 +3,8 @@ pragma solidity ^0.8.28;
 
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { MessageHashUtils } from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import { VoteChainTypes as T } from "./VoteChainTypes.sol";
-import { IElectionManager, IPartyAgentVerification, ICollationEngine } from "./interfaces/IVoteChain.sol";
+import { ClearCountTypes as T } from "./ClearCountTypes.sol";
+import { IElectionManager, IPartyAgentVerification, ICollationEngine } from "./interfaces/IClearCount.sol";
 
 /// @title AuditDeclaration
 /// @notice Final gatekeeper module (Section 3.5.5). Once the state-level collation has been approved
@@ -86,7 +86,7 @@ contract AuditDeclaration {
     ///         The portal signs it with `personal_sign`, i.e. the EIP-191 prefixed form is verified.
     function auditDigest() public view returns (bytes32) {
         return
-            keccak256(abi.encode("VoteChain.AuditApproval", block.chainid, address(this), stateResultHash()));
+            keccak256(abi.encode("ClearCount.AuditApproval", block.chainid, address(this), stateResultHash()));
     }
 
     /// @notice True when the auditor may sign: state collation approved and no escalation awaiting a ruling.

@@ -1,4 +1,4 @@
-# VoteChain frontend (docker-compose.yml `frontend` service): Vite production build served by nginx,
+# ClearCount frontend (docker-compose.yml `frontend` service): Vite production build served by nginx,
 # which also proxies /api to the backend so the browser only ever talks to one origin.
 FROM node:22-alpine AS build
 
@@ -17,11 +17,13 @@ ARG VITE_RPC_URL=http://127.0.0.1:8545
 ARG VITE_CHAIN_ID=31337
 ARG VITE_NETWORK=localhost
 ARG VITE_DEMO_MODE=true
+ARG VITE_SITE_URL=""
 ENV VITE_API_URL=$VITE_API_URL \
     VITE_RPC_URL=$VITE_RPC_URL \
     VITE_CHAIN_ID=$VITE_CHAIN_ID \
     VITE_NETWORK=$VITE_NETWORK \
-    VITE_DEMO_MODE=$VITE_DEMO_MODE
+    VITE_DEMO_MODE=$VITE_DEMO_MODE \
+    VITE_SITE_URL=$VITE_SITE_URL
 RUN npm run build
 
 FROM nginx:1.27-alpine

@@ -1,8 +1,8 @@
-# VoteChain frontend
+# ClearCount frontend
 
 React 19 + Vite 7 + **HeroUI v3** (Tailwind CSS v4, React Aria) + ethers v6. `npm install && npm run dev`
 (http://localhost:5173). Configuration comes from the repository-root `.env` (`VITE_API_URL`, `VITE_RPC_URL`,
-`VITE_CHAIN_ID`, `VITE_DEMO_MODE`); a static deployment can also define `window.__VOTECHAIN_ENV__` before the
+`VITE_CHAIN_ID`, `VITE_DEMO_MODE`); a static deployment can also define `window.__CLEARCOUNT_ENV__` before the
 bundle loads (see `src/lib/env.js`).
 
 * `src/hooks/useApp.jsx` — wallet (MetaMask or demo key), on-chain role, election polling, `sendTx` with custom-error decoding, HeroUI toasts
@@ -22,7 +22,7 @@ bundle loads (see `src/lib/env.js`).
 ## End-to-end walkthrough
 
 ```bash
-# local node + deploy + `npm run seed:local:prefill` (contracts), backend and frontend running
+# local node + deploy + `npm run seed:local` (prefill `live`), backend and frontend running
 npx playwright install chromium
 BASE_URL=http://localhost:5173 node e2e/walkthrough.mjs   # 19 steps, screenshots → e2e/screenshots/
 ```

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
@@ -49,7 +49,11 @@ export function loadDeployment() {
   return JSON.parse(readFileSync(config.deploymentPath, "utf8"));
 }
 
+let demoCache = null; // { mtimeMs, demo } — the full-state file lists 27,103 accounts, so parse it once
+
 export function loadDemoAccounts() {
   if (!config.demoMode || !existsSync(config.demoAccountsPath)) return null;
-  return JSON.parse(readFileSync(config.demoAccountsPath, "utf8"));
+  const { mtimeMs } = statSync(config.demoAccountsPath);
+  if (demoCache?.mtimeMs !== mtimeMs) demoCache = { mtimeMs, demo: JSON.parse(readFileSync(config.demoAccountsPath, "utf8")) };
+  return demoCache.demo;
 }

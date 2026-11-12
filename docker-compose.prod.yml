@@ -9,22 +9,22 @@
 # Global Caddyfile (deploy.sh prints these with your domain):
 #
 #     api.example.com {
-#         reverse_proxy votechain-api:4000
+#         reverse_proxy clearcount-api:4000
 #     }
 #     dashboard.example.com {
-#         reverse_proxy votechain-dashboard:80
+#         reverse_proxy clearcount-dashboard:80
 #     }
 #
 # Values like ${PUBLIC_API_URL} come from .env.prod (written by deploy.sh, which passes --env-file).
 # The repo-root .env is left alone: it belongs to the terminal workflow in DEVELOPMENT.md.
-name: votechain-prod
+name: clearcount-prod
 
 services:
-  # Local Ethereum node (Anvil): 70 funded accounts from the public test mnemonic. State is dumped to
+  # Local Ethereum node (Anvil). The seed funds its own 27,103 demo accounts (public test mnemonic). State is dumped to
   # a volume so restarts keep the election. Internal network only.
   chain:
     image: ghcr.io/foundry-rs/foundry:stable
-    container_name: votechain-prod-chain
+    container_name: clearcount-prod-chain
     entrypoint: ["anvil"]
     command:
       - --host=0.0.0.0
@@ -32,7 +32,7 @@ services:
       - --chain-id=31337
       - --accounts=70
       - --state=/home/foundry/anvil-state.json
-      - --state-interval=5
+      - --state-interval=60
     stop_signal: SIGINT          # anvil writes its final state dump on Ctrl-C
     volumes:
       - chain:/home/foundry
@@ -46,15 +46,15 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: votechain-prod-postgres
+    container_name: clearcount-prod-postgres
     environment:
-      POSTGRES_USER: votechain
+      POSTGRES_USER: clearcount
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set: run ./deploy.sh setup}"
-      POSTGRES_DB: votechain
+      POSTGRES_DB: clearcount
     volumes:
       - pg:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U votechain"]
+      test: ["CMD-SHELL", "pg_isready -U clearcount"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -65,11 +65,11 @@ services:
   # Skips itself when the deployment is already on the chain (contracts/hardhat/bootstrap.js).
   deployer:
     build: ./contracts
-    image: votechain-deployer
-    container_name: votechain-prod-deployer
+    image: clearcount-deployer
+    container_name: clearcount-prod-deployer
     environment:
       LOCAL_RPC_URL: http://chain:8545
-      DEMO_PREFILL: ${DEMO_PREFILL:-lga}
+      DEMO_PREFILL: ${DEMO_PREFILL:-live}
     volumes:
       - deployments:/app/deployments
     depends_on:
@@ -79,8 +79,8 @@ services:
 
   backend:
     build: ./backend
-    image: votechain-api
-    container_name: votechain-api
+    image: clearcount-api
+    container_name: clearcount-api
     environment:
       PORT: 4000
       # Only the dashboard is a browser client
@@ -89,7 +89,7 @@ services:
       RPC_URL: http://chain:8545
       DEPLOYMENT_FILE: /deployments/localhost.json
       DEMO_ACCOUNTS_FILE: /deployments/demo-accounts.json
-      DATABASE_URL: "postgres://votechain:${POSTGRES_PASSWORD}@postgres:5432/votechain"
+      DATABASE_URL: "postgres://clearcount:${POSTGRES_PASSWORD}@postgres:5432/clearcount"
       INDEXER_POLL_MS: 3000
       SESSION_TTL_SECONDS: 43200
       # true serves the PUBLIC test keys through /api/demo-accounts for the role switcher
@@ -111,7 +111,7 @@ services:
         condition: service_healthy
     networks:
       - internal   # chain, postgres, ipfs
-      - web        # Caddy: api.<domain> -> votechain-api:4000
+      - web        # Caddy: api.<domain> -> clearcount-api:4000
     restart: unless-stopped
 
   frontend:
@@ -124,20 +124,21 @@ services:
         VITE_CHAIN_ID: 31337
         VITE_NETWORK: localhost
         VITE_DEMO_MODE: "${DEMO_MODE:-true}"
-    image: votechain-dashboard
-    container_name: votechain-dashboard
+        VITE_SITE_URL: "${DASHBOARD_URL}"   # absolute URLs for the link-preview (og:image) tags
+    image: clearcount-dashboard
+    container_name: clearcount-dashboard
     depends_on:
       backend:
         condition: service_healthy
     networks:
       - internal   # nginx.conf also proxies same-origin /api to backend:4000
-      - web        # Caddy: dashboard.<domain> -> votechain-dashboard:80
+      - web        # Caddy: dashboard.<domain> -> clearcount-dashboard:80
     restart: unless-stopped
 
   # Optional real IPFS node: set IPFS_PROVIDER=kubo and COMPOSE_PROFILES=ipfs in .env.prod
   ipfs:
     image: ipfs/kubo:v0.32.1
-    container_name: votechain-prod-ipfs
+    container_name: clearcount-prod-ipfs
     profiles: ["ipfs"]
     volumes:
       - ipfs:/data/ipfs
@@ -149,15 +150,15 @@ services:
 volumes:
   # Fixed names so the data never depends on the project name or checkout path
   chain:
-    name: votechain-prod-chain
+    name: clearcount-prod-chain
   pg:
-    name: votechain-prod-pg
+    name: clearcount-prod-pg
   deployments:
-    name: votechain-prod-deployments
+    name: clearcount-prod-deployments
   uploads:
-    name: votechain-prod-uploads
+    name: clearcount-prod-uploads
   ipfs:
-    name: votechain-prod-ipfs
+    name: clearcount-prod-ipfs
 
 networks:
   internal:

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { VoteChainFixture } from "./VoteChainFixture.sol";
-import { VoteChainTypes as T } from "../src/VoteChainTypes.sol";
+import { ClearCountFixture } from "./ClearCountFixture.sol";
+import { ClearCountTypes as T } from "../src/ClearCountTypes.sol";
 import { CollationEngine } from "../src/CollationEngine.sol";
 import { AuditDeclaration } from "../src/AuditDeclaration.sol";
 import { PartyAgentVerification as PAV } from "../src/PartyAgentVerification.sol";
@@ -12,7 +12,7 @@ import { PartyAgentVerification as PAV } from "../src/PartyAgentVerification.sol
 ///         non-blocking objection, a manipulated ward total, an escalation ruled by the auditor,
 ///         the auditor's signature gate and the final declaration – then re-verifies the chain
 ///         the way a member of the public would.
-contract FullFlowTest is VoteChainFixture {
+contract FullFlowTest is ClearCountFixture {
     function setUp() public override {
         super.setUp();
         activate();

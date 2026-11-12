@@ -13,6 +13,8 @@ contracts/artifacts
 frontend/dist
 
 # runtime data
+# written by the seed: 27,103 test-mnemonic accounts, 7.6 MB
+contracts/deployments/demo-accounts.json
 backend/data
 frontend/e2e/screenshots
 .playwright-mcp

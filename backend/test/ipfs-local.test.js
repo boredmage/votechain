@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { createIpfsProvider } from "../src/ipfs.js";
 
 test("local provider stores and retrieves content by CID", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "votechain-ipfs-"));
+  const dir = mkdtempSync(join(tmpdir(), "clearcount-ipfs-"));
   const p = createIpfsProvider({ provider: "local", localDir: dir });
   const bytes = Buffer.from("EC8A form scan bytes");
   const { cid, size, provider } = await p.add(bytes, "ec8a.jpg", "image/jpeg");

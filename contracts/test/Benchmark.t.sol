@@ -4,7 +4,7 @@ pragma solidity ^0.8.28;
 import { Test } from "forge-std/Test.sol";
 import { MessageHashUtils } from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-import { VoteChainTypes as T } from "../src/VoteChainTypes.sol";
+import { ClearCountTypes as T } from "../src/ClearCountTypes.sol";
 import { ElectionManager } from "../src/ElectionManager.sol";
 import { ResultUpload } from "../src/ResultUpload.sol";
 import { PartyAgentVerification } from "../src/PartyAgentVerification.sol";
@@ -17,7 +17,7 @@ import { AuditDeclaration } from "../src/AuditDeclaration.sol";
 ///         benchmarks/<scenario>.json for the dissertation's performance evaluation chapter.
 ///
 ///   forge test --match-contract BenchmarkTest -vv
-///   VOTECHAIN_FULL_SCALE=1 forge test --match-test test_fullOyoState -vv   (33 LGAs / 351 wards / 4,500 PUs)
+///   CLEARCOUNT_FULL_SCALE=1 forge test --match-test test_fullOyoState -vv   (33 LGAs / 351 wards / 4,500 PUs)
 contract BenchmarkTest is Test {
     struct Stat {
         uint256 count;
@@ -82,8 +82,8 @@ contract BenchmarkTest is Test {
     }
 
     function test_fullOyoState() public {
-        if (!vm.envOr("VOTECHAIN_FULL_SCALE", false)) {
-            emit log("skipped: set VOTECHAIN_FULL_SCALE=1 to run the 33-LGA / 351-ward / 4,500-PU scenario");
+        if (!vm.envOr("CLEARCOUNT_FULL_SCALE", false)) {
+            emit log("skipped: set CLEARCOUNT_FULL_SCALE=1 to run the 33-LGA / 351-ward / 4,500-PU scenario");
             return;
         }
         // 33 LGAs x 11 wards = 363 wards (Oyo: 351), x 13 PUs = 4,719 PUs (Oyo: ~4,500)

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { VoteChainTypes as T } from "./VoteChainTypes.sol";
-import { IElectionManager, IPartyAgentVerification } from "./interfaces/IVoteChain.sol";
+import { ClearCountTypes as T } from "./ClearCountTypes.sol";
+import { IElectionManager, IPartyAgentVerification } from "./interfaces/IClearCount.sol";
 
 /// @title PartyAgentVerification
 /// @notice Multi-party digital signing at every administrative level plus the on-chain dispute

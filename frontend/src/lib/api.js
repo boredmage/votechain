@@ -1,4 +1,4 @@
-/** Thin client for the VoteChain backend (read model, IPFS pipeline, notifications). */
+/** Thin client for the ClearCount backend (read model, IPFS pipeline, notifications). */
 import { env } from "./env.js";
 
 // In `vite dev` the /api prefix is proxied to the backend (same origin); otherwise call it directly.
@@ -8,8 +8,8 @@ let sessionToken = null;
 export function setSessionToken(t) {
   sessionToken = t;
   try {
-    if (t) sessionStorage.setItem("votechain.session", t);
-    else sessionStorage.removeItem("votechain.session");
+    if (t) sessionStorage.setItem("clearcount.session", t);
+    else sessionStorage.removeItem("clearcount.session");
   } catch {
     /* storage unavailable */
   }
@@ -17,7 +17,7 @@ export function setSessionToken(t) {
 export function getSessionToken() {
   if (sessionToken) return sessionToken;
   try {
-    sessionToken = sessionStorage.getItem("votechain.session");
+    sessionToken = sessionStorage.getItem("clearcount.session");
   } catch {
     /* ignore */
   }
@@ -65,7 +65,8 @@ export const api = {
   verify: (level, id) => request(`/api/verify/${level}/${id}`),
   stakeholder: (address) => request(`/api/stakeholders/${address}`),
   stakeholders: (params = {}) => request(`/api/stakeholders?${new URLSearchParams(params)}`),
-  demoAccounts: () => request("/api/demo-accounts"),
+  /** Best matches for `q` among the demo accounts: { total, matches, accounts }. */
+  demoAccounts: (q = "") => request(`/api/demo-accounts?${new URLSearchParams({ q })}`),
   activity: (params = {}) => request(`/api/activity?${new URLSearchParams(params)}`),
   alerts: () => request("/api/alerts"),
   summary: () => request("/api/summary"),

@@ -1,5 +1,5 @@
 /**
- * Deploys the five VoteChain modules with the first configured signer as INEC admin and writes
+ * Deploys the five ClearCount modules with the first configured signer as INEC admin and writes
  * deployments/<network>.json (same format as the Foundry Deploy.s.sol script).
  *
  *   npx hardhat run hardhat/deploy.js --network localhost
@@ -15,7 +15,7 @@ async function main() {
   if (adminAddress.toLowerCase() !== deployer.address.toLowerCase()) {
     console.warn("INEC_ADMIN differs from the deployer; setModules must then be called by the admin. Using deployer.");
   }
-  console.log(`Deploying VoteChain to ${network.name} from ${deployer.address}`);
+  console.log(`Deploying ClearCount to ${network.name} from ${deployer.address}`);
   const startBlock = await ethers.provider.getBlockNumber();
   const { election, upload, verification, collation, audit } = await deploySystem(deployer);
 

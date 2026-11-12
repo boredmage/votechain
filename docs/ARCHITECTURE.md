@@ -1,4 +1,4 @@
-# VoteChain — implementation architecture
+# ClearCount — implementation architecture
 
 This document maps the Chapter 3 design onto the code: the four layers, the five smart-contract modules,
 the on-chain data model, the result/dispute state machine, and the off-chain services.
@@ -119,7 +119,7 @@ Rules enforced in `PartyAgentVerification`:
 
 ## 5. Validation rules (Table 3.2)
 
-`VoteChainTypes.checkFigures` evaluates rules 1–5 in table order and returns the first violation with the
+`ClearCountTypes.checkFigures` evaluates rules 1–5 in table order and returns the first violation with the
 expected bound and the offending value; `ResultUpload.submitResult` reverts with
 `ValidationFailed(rule, expected, actual)`. Rule 6 (collated total ≠ sum of lower level) lives in
 `CollationEngine.confirmCollation`, which **records** a `MismatchAlert(level, unit, officer, field,

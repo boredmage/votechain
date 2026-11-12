@@ -12,7 +12,15 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, repoRoot, "VITE_");
   const api = env.VITE_API_URL || "http://localhost:4000";
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        // link-preview tags need absolute URLs: VITE_SITE_URL is the public address of the dashboard
+        name: "site-url",
+        transformIndexHtml: (html) => html.replaceAll("%SITE_URL%", (env.VITE_SITE_URL || "").replace(/\/+$/, "")),
+      },
+    ],
     envDir: repoRoot,
     server: {
       port: 5173,

@@ -1,10 +1,10 @@
-# VoteChain
+# ClearCount
 
 **Design and Implementation of a Blockchain-Based Electoral Result Collation and Multi-Party Verification System with Hierarchical Validation from Ward to State Level — a case study of the Oyo State electoral process.**
 
 Olowe Anthony Oluboba (230916) · Department of Computer Science, University of Ibadan · Supervisor: Prof. B.O. Akinkunmi
 
-VoteChain takes over the moment physical voting closes at a polling unit. Presiding officers upload EC8A
+ClearCount takes over the moment physical voting closes at a polling unit. Presiding officers upload EC8A
 figures, the smart contract checks them arithmetically, party agents of every contesting party sign or
 dispute them, and results move upward — polling unit → ward → LGA → state — only after the level below
 is fully approved and the declared totals equal the sum of the signed lower-level results. The independent
@@ -15,12 +15,13 @@ verifiable.
 ## Repository layout
 
 ```
-votechain/
+clearcount/
 ├── contracts/          Solidity (5 modules) — Foundry project + Hardhat mirror
 │   ├── src/            ElectionManager, ResultUpload, PartyAgentVerification, CollationEngine, AuditDeclaration
 │   ├── test/           Foundry test suite (85 tests) + Oyo-scale benchmarks
 │   ├── test-hardhat/   Mocha + Chai mirror of the suite (npx hardhat test)
-│   ├── script/         Foundry deploy + demo seed scripts
+│   ├── script/         Foundry deploy script
+│   ├── data/           oyo-register.json — the demo geography (INEC names and codes)
 │   ├── hardhat/        Hardhat deploy / seed / live-simulation / verify scripts (ethers v6)
 │   ├── abi/            Exported ABIs (also copied into backend/ and frontend/)
 │   ├── deployments/    <network>.json addresses + demo-accounts.json
@@ -29,7 +30,7 @@ votechain/
 ├── backend/            Node.js + Express: IPFS pipeline, PostgreSQL cache, event indexer, notifications, REST API
 ├── frontend/           React (Vite) portals for all stakeholder roles + public verification
 ├── docs/               Architecture, contract API, STRIDE threat model, evaluation tables, demo walkthrough
-├── scripts/            export-abis.mjs, benchmark-report.mjs
+├── scripts/            export-abis.mjs, benchmark-report.mjs, build-oyo-register.mjs, reset-dev.mjs
 ├── docker-compose.yml  The whole demo in one command (chain, contracts, PostgreSQL, API, UI; optional IPFS)
 └── .env.example        Shared configuration
 ```
@@ -47,9 +48,10 @@ votechain/
 docker compose up -d          # or: npm run docker:up
 ```
 
-That builds and starts a local chain (anvil, 70 funded accounts), deploys and seeds the demo election,
-PostgreSQL, the backend API and the frontend. Open **http://localhost:5173** once `docker compose ps` shows
-every service as healthy (about two minutes the first time, for the image builds). Details, reset and
+That builds and starts a local chain (anvil), deploys and seeds the demo election (Oyo State: 33 LGAs,
+351 wards, 6,390 polling units), PostgreSQL, the backend API and the frontend. Open **http://localhost:5173**
+once `docker compose ps` shows every service as healthy (allow ten minutes or more the first time: the image
+builds, then the seeding of some 35,000 transactions). Details, reset and
 prefill levels: [DEVELOPMENT.md → Docker](DEVELOPMENT.md#0-docker-the-whole-stack-in-one-command).
 
 ## Quick start (local demo in five terminals)
@@ -59,11 +61,11 @@ cp .env.example .env                      # defaults target a local node on :854
 
 # 1. contracts: install, compile, start a local chain
 cd contracts && npm install && npx hardhat compile
-npx hardhat node                          # terminal 1 — 70 funded demo accounts (test mnemonic)
+npx hardhat node                          # terminal 1 — or: anvil
 
-# 2. deploy + seed the demo election (2 LGAs x 2 wards x 2 PUs, 3 parties, 63 role accounts)
+# 2. deploy + seed the demo election (33 LGAs, 351 wards, 6,390 PUs, 3 parties, 27,103 role accounts; ~5 min)
 npm run deploy:local                      # terminal 2 — writes deployments/localhost.json
-npm run seed:local:prefill                # configures + activates; LGA 2 already collated, LGA 1 left for you
+npm run seed:local:prefill                # configures + activates; all approved except PUs 1-2, ward 1, LGA 1, state
 npm run abi                               # (only after changing contracts) refresh ABIs for backend/frontend
 
 # 3. backend
@@ -75,16 +77,16 @@ cd ../frontend && npm install && npm run dev    # terminal 4 — http://localhos
 
 Open http://localhost:5173. With `VITE_DEMO_MODE=true` the top bar offers a **demo role switcher** listing
 every stakeholder account (INEC admin, presiding officers, party agents, collation officers, auditor,
-publisher). Pick one and the matching portal loads; no MetaMask needed. To use MetaMask instead, import a
+publisher) — type a role, a place, a unit code or `#number` to find one. Pick one and the matching portal loads; no MetaMask needed. To use MetaMask instead, import a
 key from `contracts/deployments/demo-accounts.json` and connect to `http://127.0.0.1:8545` (chain id 31337).
 
 Using Foundry instead of Hardhat for steps 1–2:
 
 ```bash
 cd contracts
-anvil --accounts 70                                             # terminal 1
+anvil                                                           # terminal 1
 forge script script/Deploy.s.sol --rpc-url localhost --broadcast
-DEMO_PREFILL=1 forge script script/SeedDemo.s.sol --rpc-url localhost --broadcast
+npm run seed:local:prefill                                      # the seed is the Hardhat script; it runs against anvil too
 ```
 
 ### Optional storage services
@@ -104,7 +106,7 @@ the cached feeds (activity, notifications, sessions, credential registry) report
 cd contracts
 forge test                                  # 85 Foundry tests (unit, integration, access matrix, full flow)
 forge test --match-contract BenchmarkTest -vv               # three scalability scenarios → benchmarks/*.json
-VOTECHAIN_FULL_SCALE=1 forge test --match-test test_fullOyoState -vv   # 33 LGAs / 363 wards / 4,719 PUs
+CLEARCOUNT_FULL_SCALE=1 forge test --match-test test_fullOyoState -vv   # 33 LGAs / 363 wards / 4,719 PUs
 npx hardhat test                            # Mocha + Chai mirror (ethers v6)
 SCALE=medium npm run simulate:local         # wall-clock simulation against the running node → benchmarks/live-*.json
 node ../scripts/benchmark-report.mjs        # regenerates docs/EVALUATION.md
@@ -118,7 +120,7 @@ The API is served on `api.<domain>` and the dashboard on `dashboard.<domain>`. I
 for both hostnames pointing at the server, and a global Caddy container on the `web` network.
 
 ```bash
-git clone <repo> && cd votechain
+git clone <repo> && cd clearcount
 ./deploy.sh        # first run asks for the domain and options, writes .env.prod, builds, deploys + seeds
 ```
 
@@ -126,10 +128,10 @@ Then add the two blocks it prints to the Caddyfile and reload Caddy:
 
 ```
 api.example.com {
-    reverse_proxy votechain-api:4000
+    reverse_proxy clearcount-api:4000
 }
 dashboard.example.com {
-    reverse_proxy votechain-dashboard:80
+    reverse_proxy clearcount-dashboard:80
 }
 ```
 

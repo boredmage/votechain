@@ -165,16 +165,52 @@ electionRouter.get(
       params.push(category);
       clauses.push(`category = $${params.length}`);
     }
-    const r = await query(`SELECT address, category, level, unit_id AS "unitId", party_id AS "partyId" FROM stakeholders WHERE ${clauses.join(" AND ")} ORDER BY category, level, unit_id, party_id`, params);
+    // a state-scale election registers tens of thousands of wallets: `limit` keeps a listing page-sized
+    const limit = Math.min(Math.max(Number(req.query.limit) || 0, 0), 5000);
+    const r = await query(`SELECT address, category, level, unit_id AS "unitId", party_id AS "partyId" FROM stakeholders WHERE ${clauses.join(" AND ")} ORDER BY category, level, unit_id, party_id${limit ? ` LIMIT ${limit}` : ""}`, params);
     res.json(r.rows);
   }),
 );
 
-/** Demo helper: known accounts for every role (only when DEMO_MODE=true and the seed script ran). */
-electionRouter.get("/demo-accounts", (_req, res) => {
+/** Order of the demo role switcher (mirrors the collation flow). */
+const DEMO_ROLE_ORDER = ["InecAdmin", "PresidingOfficer", "PartyAgent", "WardCollationOfficer", "LgaCollationOfficer", "StateReturningOfficer", "Auditor", "ResultPublisher"];
+let demoOrdered = null; // { demo, list } — accounts in switcher order, with their lower-cased search text
+
+function orderedDemoAccounts(demo) {
+  if (demoOrdered?.demo !== demo) {
+    const rank = (a) => (DEMO_ROLE_ORDER.indexOf(a.category) + DEMO_ROLE_ORDER.length + 1) % (DEMO_ROLE_ORDER.length + 1);
+    const list = demo.accounts.map((account) => ({ account, text: `${account.role} #${account.index}`.toLowerCase() }));
+    list.sort((a, b) => rank(a.account) - rank(b.account) || a.account.index - b.account.index);
+    demoOrdered = { demo, list };
+  }
+  return demoOrdered.list;
+}
+
+/** The demo accounts matching what was typed: "#12" finds an account number, anything else its role text. */
+function searchDemoAccounts(list, text) {
+  const q = String(text ?? "").trim().toLowerCase();
+  if (!q) return list;
+  if (/^#\d+$/.test(q)) {
+    const number = q.slice(1);
+    const hits = list.filter(({ account }) => String(account.index).startsWith(number));
+    const exact = (h) => (String(h.account.index) === number ? 0 : 1);
+    return hits.sort((a, b) => exact(a) - exact(b) || a.account.index - b.account.index);
+  }
+  const words = q.split(/\s+/);
+  return list.filter(({ text: hay }) => words.every((w) => hay.includes(w)));
+}
+
+/**
+ * Demo helper: known accounts for every role (only when DEMO_MODE=true and the seed script ran).
+ * A state-scale election has tens of thousands of them, so this returns the best `limit` matches for
+ * `q` (a role, a place, a unit code or "#number") together with how many matched and how many exist.
+ */
+electionRouter.get("/demo-accounts", (req, res) => {
   const demo = loadDemoAccounts();
   if (!demo) return res.status(404).json({ error: "demo accounts not available (DEMO_MODE=false or seed script not run)" });
-  res.json(demo);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 200);
+  const found = searchDemoAccounts(orderedDemoAccounts(demo), req.query.q);
+  res.json({ chainId: demo.chainId, warning: demo.warning, total: demo.accounts.length, matches: found.length, accounts: found.slice(0, limit).map((f) => f.account) });
 });
 
 electionRouter.get("/config", (_req, res) => {

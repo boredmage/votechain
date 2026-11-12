@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Scripted end-to-end walkthrough of every VoteChain portal (usability-study task script, Section 3.11.3).
+ * Scripted end-to-end walkthrough of every ClearCount portal (usability-study task script, Section 3.11.3).
  * Drives Chromium through the complete flow on the seeded local election: EC8A upload → dispute →
  * correction → re-signing → ward mismatch → collations → audit signature → declaration, saving a
  * screenshot per step to e2e/screenshots/.
  *
- *   # prerequisites: local node + deploy + `npm run seed:local:prefill` (contracts), backend and frontend running
+ *   # prerequisites: local node + deploy + `npm run seed:local` (prefill "live"), backend and frontend running
  *   cd frontend && npm i -D playwright && npx playwright install chromium
  *   BASE_URL=http://localhost:5173 node e2e/walkthrough.mjs
  *
@@ -50,6 +50,10 @@ const fillFigures = async (values) => {
 const status = (s) => `[data-testid=unit-header] [data-status=${s}]`;
 const confirmDialog = () => page.click("[data-testid=confirm-action]");
 const demo = JSON.parse(fs.readFileSync(DEMO_ACCOUNTS, "utf8"));
+// the seeded geography (33 LGAs / 351 wards / 6,390 polling units); polling units 1 and 2 are the live slice
+const register = JSON.parse(fs.readFileSync(path.join(here, "..", "..", "contracts", "data", "oyo-register.json"), "utf8"));
+const [PU1, PU2] = register.lgas[0].wards[0].pollingUnits;
+const PRECOLLATED_WARD = register.lgas[0].wards.length + 1; // first ward of LGA 2, approved by the seed
 const find = (pred) => demo.accounts.find(pred).index;
 const agent = (level, unit, party) => find((a) => a.category === "PartyAgent" && a.level === level && a.unitId === unit && a.partyId === party);
 
@@ -90,8 +94,9 @@ await page.waitForSelector("text=Collation hierarchy", { timeout: 20000 });
 await shot("01-public");
 console.log("public portal rendered");
 
-// click ward 3 in the tree
-await page.click("button[data-testid^=tree-ward]:has-text('Ward 01 - Moniya')");
+// open LGA 2 in the tree and click its first ward (pre-collated by the seed)
+await page.click("[data-testid=tree-toggle-lga-2]");
+await page.click(`[data-testid=tree-ward-${PRECOLLATED_WARD}]`);
 await page.waitForSelector("text=EC8B figures on-chain", { timeout: 10000 });
 await shot("02-public-ward3");
 console.log("ward detail rendered");
@@ -100,7 +105,7 @@ console.log("ward detail rendered");
 await pickRole(4);
 await page.waitForSelector("text=Upload EC8A result figures", { timeout: 15000 });
 await shot("03-po-empty");
-await fillFigures(["812", "300", "290", "285", "5", "150", "100", "35"]);
+await fillFigures([PU1.registeredVoters, "300", "290", "285", "5", "150", "100", "35"]);
 await page.waitForSelector("text=All arithmetic checks pass", { timeout: 5000 });
 await page.setInputFiles("input[type=file]", PNG);
 await page.waitForSelector("text=Pinned (local)", { timeout: 10000 });
@@ -137,7 +142,7 @@ await disconnect();
 // ---- PO resolves by correcting the figures --------------------------------------------
 await pickRole(4);
 await page.waitForSelector("text=Correct the figures (dispute resolution)", { timeout: 15000 });
-await fillFigures(["812", "310", "300", "295", "5", "160", "100", "35"]);
+await fillFigures([PU1.registeredVoters, "310", "300", "295", "5", "160", "100", "35"]);
 await page.waitForSelector("text=All arithmetic checks pass", { timeout: 5000 });
 await page.setInputFiles("input[type=file]", PNG);
 await page.waitForSelector("text=Pinned (local)", { timeout: 10000 });
@@ -171,7 +176,9 @@ for (const party of [1, 3]) {
   await disconnect();
 }
 await page.goto(URL, { waitUntil: "networkidle" });
-await page.click("button[data-testid^=tree-pu]:has-text('OY/11/01/001')");
+await page.click("[data-testid=tree-toggle-lga-1]");
+await page.click("[data-testid=tree-toggle-ward-1]");
+await page.click(`[data-testid=tree-pu-1]:has-text('${PU1.code}')`);
 await page.waitForSelector(status("Approved"), { timeout: 15000 });
 await shot("09-pu1-approved");
 console.log("PU 1 approved after re-signing (with one objection)");
@@ -179,7 +186,7 @@ console.log("PU 1 approved after re-signing (with one objection)");
 // ---- PO of PU 2 uploads, agents sign quickly ------------------------------------------
 await pickRole(5);
 await page.waitForSelector("text=Upload EC8A result figures", { timeout: 15000 });
-await fillFigures(["954", "400", "390", "380", "10", "200", "120", "60"]);
+await fillFigures([PU2.registeredVoters, "400", "390", "380", "10", "200", "120", "60"]);
 await page.setInputFiles("input[type=file]", PNG);
 await page.waitForSelector("text=Pinned (local)", { timeout: 10000 });
 await page.click("button:has-text('Submit to blockchain')");
@@ -247,21 +254,10 @@ await disconnect();
 // ward 1 agents sign the EC8B
 await signAll(1, 1);
 console.log("ward 1 approved");
-// PUs 3 & 4 (ward 2)
-await uploadPu(3, [1103, 500, 480, 470, 10, 250, 150, 70]);
-await signAll(0, 3);
-await uploadPu(4, [776, 350, 340, 330, 10, 170, 110, 50]);
-await signAll(0, 4);
-console.log("PUs 3-4 approved");
-await collate(find((a) => a.category === "WardCollationOfficer" && a.unitId === 2), "EC8B");
-await signAll(1, 2);
-console.log("ward 2 approved");
-// LGAs
+// LGA 1 (every other ward and LGA was approved by the seed)
 await collate(find((a) => a.category === "LgaCollationOfficer" && a.unitId === 1), "EC8C");
 await signAll(2, 1);
-await collate(find((a) => a.category === "LgaCollationOfficer" && a.unitId === 2), "EC8C");
-await signAll(2, 2);
-console.log("LGAs approved");
+console.log("LGA 1 approved");
 // State
 await collate(1, "EC8D");
 await signAll(3, 1);

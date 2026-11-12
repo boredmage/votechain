@@ -36,7 +36,7 @@ export function isComplete(f) {
 }
 
 /**
- * Client-side mirror of VoteChainTypes.checkFigures (Table 3.2) so the officer sees which rule
+ * Client-side mirror of ClearCountTypes.checkFigures (Table 3.2) so the officer sees which rule
  * a figure violates *before* a transaction is sent. The contract remains the authority.
  */
 export function checkFigures(input, candidateCount, registerValue = 0) {
@@ -56,7 +56,7 @@ export function checkFigures(input, candidateCount, registerValue = 0) {
   return { ok: !firstFail, rules: results, violated: firstFail?.name ?? RULES[0] };
 }
 
-/** keccak256(abi.encode(level, unitId, ...figures, formCid)) — identical to VoteChainTypes.figuresHash. */
+/** keccak256(abi.encode(level, unitId, ...figures, formCid)) — identical to ClearCountTypes.figuresHash. */
 export function figuresHash(levelIndex, unitId, figures, formCid) {
   const f = toChainFigures(figures);
   const coder = ethers.AbiCoder.defaultAbiCoder();

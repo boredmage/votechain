@@ -2,12 +2,12 @@
 pragma solidity ^0.8.28;
 
 import { IAccessControl } from "@openzeppelin/contracts/access/IAccessControl.sol";
-import { VoteChainFixture } from "./VoteChainFixture.sol";
-import { VoteChainTypes as T } from "../src/VoteChainTypes.sol";
+import { ClearCountFixture } from "./ClearCountFixture.sol";
+import { ClearCountTypes as T } from "../src/ClearCountTypes.sol";
 import { ElectionManager } from "../src/ElectionManager.sol";
-import { IElectionManager } from "../src/interfaces/IVoteChain.sol";
+import { IElectionManager } from "../src/interfaces/IClearCount.sol";
 
-contract ElectionManagerTest is VoteChainFixture {
+contract ElectionManagerTest is ClearCountFixture {
     // ------------------------------------------------------------------
     // Configuration & geography
     // ------------------------------------------------------------------

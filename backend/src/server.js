@@ -6,15 +6,15 @@ import { indexer } from "./indexer.js";
 
 async function main() {
   const { deployment } = getChain();
-  console.log(`[votechain] network=${deployment.network} chainId=${deployment.chainId} rpc=${config.rpcUrl}`);
-  console.log(`[votechain] ElectionManager ${deployment.contracts.ElectionManager}`);
+  console.log(`[clearcount] network=${deployment.network} chainId=${deployment.chainId} rpc=${config.rpcUrl}`);
+  console.log(`[clearcount] ElectionManager ${deployment.contracts.ElectionManager}`);
   if (hasDb()) {
     await migrate();
-    console.log("[votechain] database schema ready");
+    console.log("[clearcount] database schema ready");
   }
   const app = createApp();
   const server = app.listen(config.port, () => {
-    console.log(`[votechain] API listening on http://localhost:${config.port}/api (ipfs provider: ${config.ipfs.provider})`);
+    console.log(`[clearcount] API listening on http://localhost:${config.port}/api (ipfs provider: ${config.ipfs.provider})`);
   });
   await indexer.start();
 
@@ -29,6 +29,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("[votechain] fatal:", err.message);
+  console.error("[clearcount] fatal:", err.message);
   process.exit(1);
 });

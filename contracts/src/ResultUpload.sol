@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { VoteChainTypes as T } from "./VoteChainTypes.sol";
-import { IElectionManager, IPartyAgentVerification, IResultUpload } from "./interfaces/IVoteChain.sol";
+import { ClearCountTypes as T } from "./ClearCountTypes.sol";
+import { IElectionManager, IPartyAgentVerification, IResultUpload } from "./interfaces/IClearCount.sol";
 
 /// @title ResultUpload
 /// @notice Polling-unit (EC8A) result submission (Section 3.5.2). A presiding officer submits the

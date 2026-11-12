@@ -87,7 +87,7 @@ function figures(reg, acc, cast, valid, rej, candidateVotes) {
   };
 }
 
-/** Same hash as VoteChainTypes.figuresHash(level, unitId, figures, formCid). */
+/** Same hash as ClearCountTypes.figuresHash(level, unitId, figures, formCid). */
 function figuresHash(level, unitId, f, formCid) {
   const coder = ethers.AbiCoder.defaultAbiCoder();
   return ethers.keccak256(
@@ -166,6 +166,16 @@ async function attachSystem(networkName) {
   };
 }
 
+/** The demo election's geography: Oyo State LGAs -> wards -> polling units (INEC names and codes). */
+function loadRegister() {
+  return JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "oyo-register.json"), "utf8"));
+}
+
+/** Parent node of the test-mnemonic accounts: hdRoot().deriveChild(i) is account i (fast for thousands). */
+function hdRoot() {
+  return ethers.HDNodeWallet.fromPhrase(TEST_MNEMONIC, undefined, "m/44'/60'/0'/0");
+}
+
 /** Wallet for mnemonic index i (matches Hardhat/Anvil account ordering). */
 function walletAt(index, provider) {
   const w = ethers.HDNodeWallet.fromPhrase(TEST_MNEMONIC, undefined, `m/44'/60'/0'/0/${index}`);
@@ -194,6 +204,8 @@ module.exports = {
   demoFigures,
   writeDeployment,
   readDeployment,
+  loadRegister,
+  hdRoot,
   walletAt,
   signAudit,
 };

@@ -1,8 +1,8 @@
 {
-  "name": "votechain",
+  "name": "clearcount",
   "version": "1.0.0",
   "private": true,
-  "description": "VoteChain — blockchain-based electoral result collation and multi-party verification with hierarchical validation (Oyo State case study)",
+  "description": "ClearCount — blockchain-based electoral result collation and multi-party verification with hierarchical validation (Oyo State case study)",
   "scripts": {
     "install:all": "npm --prefix contracts install && npm --prefix backend install && npm --prefix frontend install",
     "docker:up": "docker compose up -d --build",

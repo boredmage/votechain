@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { VoteChainTypes as T } from "../VoteChainTypes.sol";
+import { ClearCountTypes as T } from "../ClearCountTypes.sol";
 
 /// @notice Read/write surface of ElectionManager consumed by the other four modules.
 interface IElectionManager {

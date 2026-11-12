@@ -1,5 +1,5 @@
 /**
- * Read-only access to the deployed VoteChain contracts (the blockchain is the authoritative record;
+ * Read-only access to the deployed ClearCount contracts (the blockchain is the authoritative record;
  * PostgreSQL is only a display cache). The backend never holds a private key and never sends
  * transactions – every state change is signed by the stakeholder's own wallet in the portal.
  */
@@ -141,35 +141,104 @@ export async function readElectionSummary() {
   };
 }
 
-export async function readGeography() {
-  const { contracts } = getChain();
-  const { election, verification } = contracts;
-  const lgaCount = num(await election.lgaCount());
-  const lgas = [];
-  for (let l = 1; l <= lgaCount; l++) {
-    const lga = await election.getLga(l);
-    const wards = [];
-    for (const wIdRaw of lga.wardIds) {
-      const wId = num(wIdRaw);
-      const ward = await election.getWard(wId);
-      const pus = [];
-      for (const puIdRaw of ward.pollingUnitIds) {
-        const puId = num(puIdRaw);
-        const pu = await election.getPollingUnit(puId);
-        pus.push({
-          id: puId,
-          code: pu.code,
-          name: pu.name,
-          registeredVoters: num(pu.registeredVoters),
-          cancelled: pu.cancelled,
-          status: STATUSES[num(await verification.statusOf(0, puId))],
-        });
-      }
-      wards.push({ id: wId, name: ward.name, lgaId: l, status: STATUSES[num(await verification.statusOf(1, wId))], pollingUnits: pus });
-    }
-    lgas.push({ id: l, name: lga.name, status: STATUSES[num(await verification.statusOf(2, l))], wards });
+// The geography read is the hottest one (every open portal polls it) and at state scale it spans
+// 6,775 units. The names never change once the election is Active, so the structure is cached until
+// the unit counts move; the statuses are re-read in parallel (ethers folds the calls into JSON-RPC
+// batches) and shared between concurrent requests for a few seconds.
+const GEOGRAPHY_TTL_MS = 5000;
+const TRACE_TTL_MS = 20000;
+let structureCache = null; // { key, lgas }
+const shared = new Map(); // name -> { at, value, refreshing }
+
+/**
+ * One read per name, shared by every caller. A result older than `ttlMs` is still served while a
+ * single refresh runs behind it, so a poll never waits on the chain after the first load (the whole
+ * state is ~13,500 status calls).
+ */
+function sharedRead(name, ttlMs, read) {
+  let entry = shared.get(name);
+  if (!entry) shared.set(name, (entry = { at: 0, value: undefined, refreshing: null }));
+  if (!entry.refreshing && Date.now() - entry.at >= ttlMs) {
+    entry.refreshing = read()
+      .then((value) => {
+        entry.value = value;
+        entry.at = Date.now();
+        return value;
+      })
+      .finally(() => {
+        entry.refreshing = null;
+      });
+    entry.refreshing.catch(() => {}); // surfaced to the callers awaiting it, below
   }
-  return { lgas, stateStatus: STATUSES[num(await verification.statusOf(3, STATE_UNIT_ID))] };
+  return entry.value !== undefined ? Promise.resolve(entry.value) : entry.refreshing;
+}
+
+const range = (n) => Array.from({ length: n }, (_, i) => i + 1);
+
+async function readStructure() {
+  const { election } = getChain().contracts;
+  const [lgaCount, wardCount, puCount] = (await Promise.all([election.lgaCount(), election.wardCount(), election.pollingUnitCount()])).map(num);
+  const key = `${lgaCount}/${wardCount}/${puCount}`;
+  if (structureCache?.key === key) return structureCache.lgas;
+  const [lgaRows, wardRows, puRows] = await Promise.all([
+    Promise.all(range(lgaCount).map((id) => election.getLga(id))),
+    Promise.all(range(wardCount).map((id) => election.getWard(id))),
+    Promise.all(range(puCount).map((id) => election.getPollingUnit(id))),
+  ]);
+  const lgas = lgaRows.map((lga, i) => ({
+    id: i + 1,
+    name: lga.name,
+    wards: Array.from(lga.wardIds).map((wIdRaw) => {
+      const wId = num(wIdRaw);
+      const ward = wardRows[wId - 1];
+      return {
+        id: wId,
+        name: ward.name,
+        lgaId: i + 1,
+        pollingUnits: Array.from(ward.pollingUnitIds).map((puIdRaw) => {
+          const puId = num(puIdRaw);
+          const pu = puRows[puId - 1];
+          return { id: puId, code: pu.code, name: pu.name, registeredVoters: num(pu.registeredVoters) };
+        }),
+      };
+    }),
+  }));
+  structureCache = { key, lgas };
+  return lgas;
+}
+
+async function loadGeography() {
+  const { election, verification } = getChain().contracts;
+  const structure = await readStructure();
+  const wards = structure.flatMap((l) => l.wards);
+  const pus = wards.flatMap((w) => w.pollingUnits);
+  const status = async (level, id) => STATUSES[num(await verification.statusOf(level, id))];
+  const [lgaStatus, wardStatus, puStatus, puCancelled, stateStatus] = await Promise.all([
+    Promise.all(structure.map((l) => status(2, l.id))),
+    Promise.all(wards.map((w) => status(1, w.id))),
+    Promise.all(pus.map((p) => status(0, p.id))),
+    Promise.all(pus.map((p) => election.isPollingUnitCancelled(p.id))),
+    status(3, STATE_UNIT_ID),
+  ]);
+  let w = 0;
+  let p = 0;
+  const lgas = structure.map((lga, l) => ({
+    id: lga.id,
+    name: lga.name,
+    status: lgaStatus[l],
+    wards: lga.wards.map((ward) => ({
+      id: ward.id,
+      name: ward.name,
+      lgaId: ward.lgaId,
+      status: wardStatus[w++],
+      pollingUnits: ward.pollingUnits.map((pu) => ({ ...pu, cancelled: puCancelled[p], status: puStatus[p++] })),
+    })),
+  }));
+  return { lgas, stateStatus };
+}
+
+export function readGeography() {
+  return sharedRead("geography", GEOGRAPHY_TTL_MS, loadGeography);
 }
 
 export async function readUnit(level, unitId) {
@@ -318,29 +387,53 @@ export async function readAuditAndDeclaration() {
   };
 }
 
-/** Full trace from the state result down to every polling unit (auditor & public verifier). */
-export async function readChainTrace() {
-  const { contracts } = getChain();
-  const { collation } = contracts;
+/**
+ * Full trace from the state result down to every polling unit (auditor & public verifier).
+ * The state, LGAs and wards carry their complete unit record; a polling unit carries what the trace
+ * shows of it (code, status, figures, dispute ids) — its full record is one /units/pu/:id away.
+ */
+export function readChainTrace() {
+  return sharedRead("trace", TRACE_TTL_MS, loadChainTrace);
+}
+
+async function loadChainTrace() {
+  const { upload, verification, collation } = getChain().contracts;
   const geo = await readGeography();
-  const state = await readUnit(3, STATE_UNIT_ID);
-  const lgas = [];
-  for (const lga of geo.lgas) {
-    const lgaUnit = await readUnit(2, lga.id);
-    const wards = [];
-    for (const ward of lga.wards) {
-      const wardUnit = await readUnit(1, ward.id);
-      const pus = [];
-      for (const pu of ward.pollingUnits) pus.push(await readUnit(0, pu.id));
-      wards.push({ ...wardUnit, pollingUnits: pus });
-    }
-    lgas.push({ ...lgaUnit, wards });
-  }
-  const consistency = { wards: {}, lgas: {}, state: null };
+  const tracePu = async (pu) => {
+    const [r, disputeIds] = await Promise.all([upload.getResult(pu.id), verification.disputeIdsOf(0, pu.id)]);
+    return {
+      unitId: pu.id,
+      code: pu.code,
+      name: pu.name,
+      status: pu.status,
+      cancelled: pu.cancelled,
+      figures: r.exists ? figuresToJson(r.figures) : null,
+      disputes: Array.from(disputeIds).map(num),
+    };
+  };
+  const [state, lgas] = await Promise.all([
+    readUnit(3, STATE_UNIT_ID),
+    Promise.all(
+      geo.lgas.map(async (lga) => {
+        const [lgaUnit, wards] = await Promise.all([
+          readUnit(2, lga.id),
+          Promise.all(
+            lga.wards.map(async (ward) => {
+              const [wardUnit, pollingUnits] = await Promise.all([readUnit(1, ward.id), Promise.all(ward.pollingUnits.map(tracePu))]);
+              return { ...wardUnit, pollingUnits };
+            }),
+          ),
+        ]);
+        return { ...lgaUnit, wards };
+      }),
+    ),
+  ]);
+  // readUnit already asked CollationEngine.verifyConsistency for every collated unit
+  const verdict = (unit) => (unit.collation ? unit.consistent : null);
+  const consistency = { wards: {}, lgas: {}, state: verdict(state) };
   for (const lga of lgas) {
-    for (const w of lga.wards) consistency.wards[w.unitId] = w.collation ? (await collation.verifyConsistency(1, w.unitId))[0] : null;
-    consistency.lgas[lga.unitId] = lga.collation ? (await collation.verifyConsistency(2, lga.unitId))[0] : null;
+    consistency.lgas[lga.unitId] = verdict(lga);
+    for (const w of lga.wards) consistency.wards[w.unitId] = verdict(w);
   }
-  consistency.state = state.collation ? (await collation.verifyConsistency(3, STATE_UNIT_ID))[0] : null;
   return { state, lgas, consistency };
 }

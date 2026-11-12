@@ -27,7 +27,7 @@ export async function connectInjected(expectedChainId) {
         await provider.send("wallet_addEthereumChain", [
           {
             chainId: hex,
-            chainName: Number(expectedChainId) === 31337 ? "VoteChain Local (Hardhat/Anvil)" : `Chain ${expectedChainId}`,
+            chainName: Number(expectedChainId) === 31337 ? "ClearCount Local (Hardhat/Anvil)" : `Chain ${expectedChainId}`,
             rpcUrls: [RPC_URL],
             nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
           },

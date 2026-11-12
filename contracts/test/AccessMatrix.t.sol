@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { VoteChainFixture } from "./VoteChainFixture.sol";
-import { VoteChainTypes as T } from "../src/VoteChainTypes.sol";
+import { ClearCountFixture } from "./ClearCountFixture.sol";
+import { ClearCountTypes as T } from "../src/ClearCountTypes.sol";
 import { ResultUpload } from "../src/ResultUpload.sol";
 import { CollationEngine } from "../src/CollationEngine.sol";
 import { AuditDeclaration } from "../src/AuditDeclaration.sol";
@@ -10,7 +10,7 @@ import { PartyAgentVerification as PAV } from "../src/PartyAgentVerification.sol
 
 /// @notice Role-based access matrix (Section 6.6 / Objective 1): every write action is attempted by
 ///         every *other* stakeholder category and must revert. Complements the per-module tests.
-contract AccessMatrixTest is VoteChainFixture {
+contract AccessMatrixTest is ClearCountFixture {
     address[] internal everyone;
 
     function setUp() public override {

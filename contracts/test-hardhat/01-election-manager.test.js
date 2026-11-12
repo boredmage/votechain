@@ -1,10 +1,10 @@
 const { expect } = require("chai");
-const { deployVoteChain, activeVoteChain, loadFixture, Level } = require("./fixture");
+const { deployClearCount, activeClearCount, loadFixture, Level } = require("./fixture");
 const { Phase } = require("../hardhat/lib");
 
 describe("ElectionManager", function () {
   it("registers the geography, parties and candidates", async function () {
-    const { election } = await loadFixture(deployVoteChain);
+    const { election } = await loadFixture(deployClearCount);
     expect(await election.lgaCount()).to.equal(2n);
     expect(await election.wardCount()).to.equal(4n);
     expect(await election.pollingUnitCount()).to.equal(8n);
@@ -19,7 +19,7 @@ describe("ElectionManager", function () {
   });
 
   it("stores election information and starts in Registration", async function () {
-    const { election } = await loadFixture(deployVoteChain);
+    const { election } = await loadFixture(deployClearCount);
     const info = await election.getElectionInfo();
     expect(info.name).to.equal("2027 Oyo State Governorship Election");
     expect(info.stateName).to.equal("Oyo");
@@ -27,7 +27,7 @@ describe("ElectionManager", function () {
   });
 
   it("only the INEC admin can configure", async function () {
-    const { election, stranger } = await loadFixture(deployVoteChain);
+    const { election, stranger } = await loadFixture(deployClearCount);
     await expect(election.connect(stranger).addLga("Ibadan North")).to.be.revertedWithCustomError(
       election,
       "AccessControlUnauthorizedAccount",
@@ -35,7 +35,7 @@ describe("ElectionManager", function () {
   });
 
   it("assigns one role and one scope per address", async function () {
-    const { election, po, agents, wardCo, sro, auditor, publisher } = await loadFixture(deployVoteChain);
+    const { election, po, agents, wardCo, sro, auditor, publisher } = await loadFixture(deployClearCount);
     expect(await election.hasRole(await election.PRESIDING_OFFICER_ROLE(), po[1].address)).to.equal(true);
     expect(await election.hasRole(await election.WARD_COLLATION_OFFICER_ROLE(), wardCo[1].address)).to.equal(true);
     expect(await election.hasRole(await election.STATE_RETURNING_OFFICER_ROLE(), sro.address)).to.equal(true);
@@ -57,7 +57,7 @@ describe("ElectionManager", function () {
   });
 
   it("enforces separation of duties (one category per address)", async function () {
-    const { election, admin, po, agents } = await loadFixture(deployVoteChain);
+    const { election, admin, po, agents } = await loadFixture(deployClearCount);
     await (await election.connect(admin).revokeStakeholder(agents[Level.Ward][1][1].address)).wait();
     await expect(election.connect(admin).registerPartyAgent(po[1].address, 1, Level.Ward, 1))
       .to.be.revertedWithCustomError(election, "AlreadyAssigned")
@@ -65,14 +65,14 @@ describe("ElectionManager", function () {
   });
 
   it("allows one agent per party per unit", async function () {
-    const { election, admin, stranger } = await loadFixture(deployVoteChain);
+    const { election, admin, stranger } = await loadFixture(deployClearCount);
     await expect(election.connect(admin).registerPartyAgent(stranger.address, 1, Level.PollingUnit, 1))
       .to.be.revertedWithCustomError(election, "AlreadyTaken")
       .withArgs(Level.PollingUnit, 1);
   });
 
   it("blocks direct grantRole/revokeRole/renounceRole", async function () {
-    const { election, admin, stranger, agents } = await loadFixture(deployVoteChain);
+    const { election, admin, stranger, agents } = await loadFixture(deployClearCount);
     const role = await election.PARTY_AGENT_ROLE();
     await expect(election.connect(admin).grantRole(role, stranger.address)).to.be.revertedWithCustomError(
       election,
@@ -86,7 +86,7 @@ describe("ElectionManager", function () {
   });
 
   it("freezes registration once the election is Active", async function () {
-    const { election, admin, stranger } = await loadFixture(activeVoteChain);
+    const { election, admin, stranger } = await loadFixture(activeClearCount);
     expect(Number(await election.phase())).to.equal(Phase.Active);
     await expect(election.connect(admin).addLga("Late LGA"))
       .to.be.revertedWithCustomError(election, "WrongPhase")
@@ -101,7 +101,7 @@ describe("ElectionManager", function () {
   });
 
   it("can cancel a polling unit only while it has no figures", async function () {
-    const { election, admin, submitPu } = await loadFixture(activeVoteChain);
+    const { election, admin, submitPu } = await loadFixture(activeClearCount);
     await (await election.connect(admin).cancelPollingUnit(2, "bafy-cancel")).wait();
     expect(await election.isPollingUnitCancelled(2)).to.equal(true);
     await submitPu(1);

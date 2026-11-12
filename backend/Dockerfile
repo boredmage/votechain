@@ -1,4 +1,4 @@
-# VoteChain backend API (docker-compose.yml `backend` service).
+# ClearCount backend API (docker-compose.yml `backend` service).
 FROM node:22-alpine
 
 WORKDIR /app

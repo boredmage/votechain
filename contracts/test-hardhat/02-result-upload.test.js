@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { activeVoteChain, loadFixture, figures, Level } = require("./fixture");
+const { activeClearCount, loadFixture, figures, Level } = require("./fixture");
 const { Rule, ResultStatus, Phase, figuresHash } = require("../hardhat/lib");
 
 describe("ResultUpload — six validation rules (Table 3.2)", function () {
@@ -11,7 +11,7 @@ describe("ResultUpload — six validation rules (Table 3.2)", function () {
   }
 
   it("accepts consistent figures, stores them and opens the signing round", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     const f = ctx.goodFigures();
     await expect(ctx.upload.connect(ctx.po[1]).submitResult(1, f, "bafy-ec8a-1")).to.emit(ctx.upload, "ResultSubmitted");
     const r = await ctx.upload.getResult(1);
@@ -26,42 +26,42 @@ describe("ResultUpload — six validation rules (Table 3.2)", function () {
   });
 
   it("rule 1: total votes cast > accredited voters", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await expectRule(ctx, figures(1000, 600, 620, 610, 10, [300, 240, 70]), Rule.CastExceedsAccredited, 600, 620);
   });
 
   it("rule 2: total votes cast > registered voters", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await expectRule(ctx, figures(500, 700, 600, 590, 10, [300, 220, 70]), Rule.CastExceedsRegistered, 500, 600);
   });
 
   it("rule 3: valid + rejected != total cast", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await expectRule(ctx, figures(1000, 600, 580, 565, 10, [300, 200, 65]), Rule.ValidPlusRejectedMismatch, 580, 575);
   });
 
   it("rule 4: sum of candidate votes != valid votes", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await expectRule(ctx, figures(1000, 600, 580, 570, 10, [300, 200, 60]), Rule.CandidateSumMismatch, 570, 560);
   });
 
   it("rule 5: accredited voters > registered voters", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await expectRule(ctx, figures(1000, 1200, 580, 570, 10, [300, 200, 70]), Rule.AccreditedExceedsRegistered, 1000, 1200);
   });
 
   it("register cross-check: registered voters must match INEC's PU register", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await expectRule(ctx, figures(1100, 600, 580, 570, 10, [300, 200, 70]), Rule.RegisterMismatch, 1000, 1100);
   });
 
   it("candidate array must have one entry per candidate", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await expectRule(ctx, figures(1000, 600, 580, 570, 10, [300, 270]), Rule.CandidateSumMismatch, 3, 2);
   });
 
   it("validateFigures view mirrors the on-chain checks for the portal", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     const [rule] = await ctx.upload.validateFigures(1, ctx.goodFigures());
     expect(Number(rule)).to.equal(Rule.None);
     const [bad, e, a] = await ctx.upload.validateFigures(1, figures(1000, 600, 620, 610, 10, [300, 240, 70]));
@@ -71,7 +71,7 @@ describe("ResultUpload — six validation rules (Table 3.2)", function () {
   });
 
   it("only the assigned presiding officer may upload", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await expect(ctx.upload.connect(ctx.po[2]).submitResult(1, ctx.goodFigures(), "cid"))
       .to.be.revertedWithCustomError(ctx.upload, "NotPresidingOfficer")
       .withArgs(ctx.po[2].address, 1);
@@ -80,7 +80,7 @@ describe("ResultUpload — six validation rules (Table 3.2)", function () {
   });
 
   it("rejects double submission, missing form CID and cancelled units", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await expect(ctx.upload.connect(ctx.po[1]).submitResult(1, ctx.goodFigures(), "")).to.be.revertedWithCustomError(
       ctx.upload,
       "EmptyFormCid",
@@ -96,7 +96,7 @@ describe("ResultUpload — six validation rules (Table 3.2)", function () {
   });
 
   it("first-time submissions are only accepted in the Active phase", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await (await ctx.election.connect(ctx.admin).closeSubmissions()).wait();
     await expect(ctx.upload.connect(ctx.po[1]).submitResult(1, ctx.goodFigures(), "cid"))
       .to.be.revertedWithCustomError(ctx.upload, "WrongPhase")
@@ -104,7 +104,7 @@ describe("ResultUpload — six validation rules (Table 3.2)", function () {
   });
 
   it("resubmission is only possible while Frozen and re-runs validation", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     await ctx.submitPu(1, ctx.goodFigures());
     await expect(ctx.upload.connect(ctx.po[1]).resubmitResult(1, ctx.goodFigures(), "cid-2")).to.be.revertedWithCustomError(
       ctx.upload,

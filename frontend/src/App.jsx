@@ -34,7 +34,7 @@ class ErrorBoundary extends Component {
     return { error };
   }
   componentDidCatch(error, info) {
-    console.error("VoteChain UI error", error, info?.componentStack);
+    console.error("ClearCount UI error", error, info?.componentStack);
   }
   render() {
     if (!this.state.error) return this.props.children;
@@ -68,7 +68,7 @@ function Shell() {
   if (configError)
     return (
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:px-6">
-        <Alert kind="danger" title="Cannot reach the VoteChain backend" action={<Button size="sm" variant="secondary" onPress={() => window.location.reload()}>Retry</Button>}>
+        <Alert kind="danger" title="Cannot reach the ClearCount backend" action={<Button size="sm" variant="secondary" onPress={() => window.location.reload()}>Retry</Button>}>
           {configError}. Start it with <code>npm run dev</code> in <code>backend/</code> (it needs a deployed contract set — see the README).
         </Alert>
       </main>
@@ -88,7 +88,7 @@ function Shell() {
       <PhaseStepper />
       <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col gap-5 px-4 py-5 sm:px-6">
         {backendDown ? (
-          <Alert kind="warn" title="Connection to the VoteChain backend lost">
+          <Alert kind="warn" title="Connection to the ClearCount backend lost">
             The figures below may be out of date. Retrying automatically every few seconds.
           </Alert>
         ) : null}
@@ -124,7 +124,7 @@ function Shell() {
       </main>
       <footer className="border-t border-border px-4 py-6 text-center text-xs text-muted">
         <p className="mx-auto max-w-3xl">
-          VoteChain — blockchain-based electoral result collation and multi-party verification with hierarchical validation (Oyo State case study). Every record is read from the Ethereum contracts; the backend is
+          ClearCount — blockchain-based electoral result collation and multi-party verification with hierarchical validation (Oyo State case study). Every record is read from the Ethereum contracts; the backend is
           a display cache and IPFS gateway only.
           {role ? ` · Signed in as ${CATEGORY_LABEL[role.category] ?? role.category}` : ""}
         </p>

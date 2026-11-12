@@ -1,5 +1,5 @@
 /**
- * Event indexer: replays every VoteChain contract event into the PostgreSQL display cache and
+ * Event indexer: replays every ClearCount contract event into the PostgreSQL display cache and
  * derives the notification queue that tells each stakeholder what awaits their action.
  * The chain remains authoritative – the cache can be dropped and rebuilt at any time.
  */

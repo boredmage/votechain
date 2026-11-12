@@ -3,14 +3,14 @@ pragma solidity ^0.8.28;
 
 import { Test } from "forge-std/Test.sol";
 import { MessageHashUtils } from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import { VoteChainFixture } from "../VoteChainFixture.sol";
-import { VoteChainTypes as T } from "../../src/VoteChainTypes.sol";
+import { ClearCountFixture } from "../ClearCountFixture.sol";
+import { ClearCountTypes as T } from "../../src/ClearCountTypes.sol";
 import { ElectionManager } from "../../src/ElectionManager.sol";
 import { ResultUpload } from "../../src/ResultUpload.sol";
 import { PartyAgentVerification as PAV } from "../../src/PartyAgentVerification.sol";
 import { CollationEngine } from "../../src/CollationEngine.sol";
 import { AuditDeclaration } from "../../src/AuditDeclaration.sol";
-import { IPartyAgentVerification } from "../../src/interfaces/IVoteChain.sol";
+import { IPartyAgentVerification } from "../../src/interfaces/IClearCount.sol";
 
 /// @notice Read-only view of the fixture's actor book, so the handler can act as any stakeholder.
 interface IActorBook {
@@ -25,7 +25,7 @@ interface IActorBook {
 }
 
 /// @notice Random but role-correct (and sometimes role-incorrect) stakeholder actions.
-contract VoteChainHandler is Test {
+contract ClearCountHandler is Test {
     ElectionManager internal election;
     ResultUpload internal upload;
     PAV internal verification;
@@ -379,13 +379,13 @@ contract VoteChainHandler is Test {
 
 /// @notice Handler-based invariant suite over the default fixture geography (2 LGAs x 2 wards x 2 PUs,
 ///         3 parties) — small enough that random walks regularly reach the state declaration.
-contract VoteChainInvariantTest is VoteChainFixture, IActorBook {
-    VoteChainHandler internal handler;
+contract ClearCountInvariantTest is ClearCountFixture, IActorBook {
+    ClearCountHandler internal handler;
 
     function setUp() public override {
         super.setUp();
         activate();
-        handler = new VoteChainHandler(election, upload, verification, collation, audit, this);
+        handler = new ClearCountHandler(election, upload, verification, collation, audit, this);
         targetContract(address(handler));
     }
 
@@ -458,7 +458,7 @@ contract VoteChainInvariantTest is VoteChainFixture, IActorBook {
             AuditDeclaration.Declaration memory d = audit.getDeclaration();
             assertEq(d.stateResultHash, a.stateResultHash);
             bytes32 digest = keccak256(
-                abi.encode("VoteChain.AuditApproval", block.chainid, address(audit), a.stateResultHash)
+                abi.encode("ClearCount.AuditApproval", block.chainid, address(audit), a.stateResultHash)
             );
             assertEq(
                 ecrecover2(MessageHashUtils.toEthSignedMessageHash(digest), a.signature), election.auditor()

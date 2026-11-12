@@ -109,7 +109,7 @@ feedsRouter.post(
 // the issuer signature *and* the on-chain role registry.
 // ---------------------------------------------------------------------------
 export function credentialMessage(payload) {
-  return `VoteChain Stakeholder Credential\n${JSON.stringify(payload)}`;
+  return `ClearCount Stakeholder Credential\n${JSON.stringify(payload)}`;
 }
 
 feedsRouter.post(

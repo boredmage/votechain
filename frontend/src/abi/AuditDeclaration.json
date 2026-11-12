@@ -200,7 +200,7 @@
           {
             "name": "figures",
             "type": "tuple",
-            "internalType": "struct VoteChainTypes.Figures",
+            "internalType": "struct ClearCountTypes.Figures",
             "components": [
               {
                 "name": "registeredVoters",
@@ -497,7 +497,7 @@
       {
         "name": "status",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.ResultStatus"
+        "internalType": "enum ClearCountTypes.ResultStatus"
       }
     ]
   }

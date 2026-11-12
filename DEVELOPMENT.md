@@ -1,4 +1,4 @@
-# Running VoteChain in development
+# Running ClearCount in development
 
 This guide gets the full stack running locally: a blockchain node, the deployed and seeded contracts, PostgreSQL, the
 backend API and the HeroUI frontend. Allow about 10 minutes the first time and 1 minute after that.
@@ -11,33 +11,33 @@ backend API and the HeroUI frontend. Allow about 10 minutes the first time and 1
 
 ## 0. Docker: the whole stack in one command
 
-If you only want to *run* VoteChain, you need Docker Desktop and nothing else:
+If you only want to *run* ClearCount, you need Docker Desktop and nothing else:
 
 ```bash
 docker compose up -d                 # or: npm run docker:up
-docker compose ps                    # wait until backend and frontend are "healthy" (~2 min the first time)
+docker compose ps                    # wait until backend and frontend are "healthy" (10 min or more the first time: builds, then the seed)
 ```
 
 Then open **http://localhost:5173** and continue with §4. What starts:
 
 | Service | What it is | Port on your machine |
 | --- | --- | --- |
-| `chain` | anvil with 70 funded accounts; its state is kept in a volume across restarts | 8545 |
+| `chain` | anvil; its state is kept in a volume across restarts | 8545 |
 | `postgres` | the display cache | 5432 |
-| `deployer` | one-shot job: deploys the contracts and seeds the demo election, then exits | – |
+| `deployer` | one-shot job: deploys the contracts and seeds the demo election (33 LGAs, 351 wards, 6,390 polling units), then exits | – |
 | `backend` | the API | 4000 |
 | `frontend` | the production build, served by nginx, which proxies `/api` to the backend | 5173 |
 | `ipfs` | optional Kubo node (`IPFS_PROVIDER=kubo docker compose --profile ipfs up -d`) | 5001 / 8080 |
 
 The containers reach each other by service name; only the ports above are published. The browser signs
 demo transactions against `http://127.0.0.1:8545`, and MetaMask uses that same RPC URL (chain ID 31337).
-The demo keys are the usual test-mnemonic accounts, so `contracts/deployments/demo-accounts.json` in the
-repository stays valid. The compose file does **not** read the repository `.env` (its URLs point at
+The demo keys are derived from the usual test mnemonic (account *n* is `m/44'/60'/0'/0/n`); the seed writes
+the full list to `contracts/deployments/demo-accounts.json` (generated, 7.6 MB, not committed). The compose file does **not** read the repository `.env` (its URLs point at
 127.0.0.1 for the terminal workflow below); the only knobs it takes from the environment are `DEMO_PREFILL`,
 `IPFS_PROVIDER` and `FRONTEND_PORT`.
 
 ```bash
-DEMO_PREFILL=all docker compose up -d      # seed level on first start: none | lga (default) | all | declared
+DEMO_PREFILL=all docker compose up -d      # seed level on first start: none | live (default) | all | declared
 npm run docker:logs                        # follow the deployer, backend and frontend logs
 npm run docker:down                        # stop; chain state, database and uploads survive
 npm run docker:reset                       # fresh election: wipes chain, database and uploads, then starts again
@@ -61,7 +61,7 @@ Hardhat prints an "unsupported Node.js version" warning on Node 23+. It is harml
 
 ## 2. One-time setup
 
-From the repository root (`votechain/`):
+From the repository root (`clearcount/`):
 
 ```bash
 cp .env.example .env          # defaults already target localhost:8545 / :4000 / :5173
@@ -80,21 +80,25 @@ Run each block in its own terminal, from the repository root, in this order.
 **Terminal 1: local blockchain**
 
 ```bash
-anvil --accounts 70            # or: npm run chain   (Hardhat node, also 70 accounts)
+anvil                          # or: npm run chain   (Hardhat node)
 ```
 
-Leave it running. It must have 70 funded accounts, because the seed script registers 63 stakeholder wallets.
+Leave it running. The seed script derives its 27,103 stakeholder wallets from the test mnemonic and funds them
+itself (`hardhat_setBalance`), so the node needs no extra accounts.
 
 **Terminal 2: database, contracts and demo election**
 
 ```bash
 docker compose up -d postgres          # skip if DATABASE_URL is empty
 npm run deploy:local                   # deploys the 5 contracts → contracts/deployments/localhost.json
-npm run seed:local                     # demo election (2 LGAs × 2 wards × 2 PUs, 3 parties), LGA 2 pre-collated
+npm run seed:local                     # demo election: Oyo State, 33 LGAs / 351 wards / 6,390 PUs, 3 parties (~5 min)
 ```
 
-`npm run seed:local` uses the `lga` prefill level: LGA 2 is already collated, and LGA 1 is left for you to drive
-through the portals. To start at a different point (empty, fully collated, or declared), use `npm run reset` (§5).
+The geography is `contracts/data/oyo-register.json`: INEC's names and codes for every LGA (33), ward (351) and
+polling unit (6,390) of Oyo State (built by `scripts/build-oyo-register.mjs`; the registered-voter counts are synthetic).
+`npm run seed:local` uses the `live` prefill level: everything is already approved except a small slice left for
+you to drive through the portals — polling units 1 and 2, and so ward 1 (Ilora I), LGA 1 (Afijio) and the state. To start at a different point (empty, fully collated, or declared), use `npm run reset` (§5).
+For a quick, small election while developing, seed only the first few LGAs: `SEED_LGAS=3 npm run seed:local`.
 
 **Terminal 3: backend API** (http://localhost:4000/api)
 
@@ -117,7 +121,8 @@ Open **http://localhost:5173**.
 
 - **Public verification:** works with no wallet. Pick any unit in the collation tree.
 - **Act as a stakeholder:** click the **"Act as a demo role…"** box in the header and type to filter, e.g.
-  `Presiding`, `PA Agent`, `Ward`, or an account number such as `#4`. The matching portal opens with no MetaMask
+  `Presiding`, `PA Agent Ilora`, a unit code such as `30/01/01/002`, or an account number such as `#4`. The list
+  shows the 50 best matches of the 27,103 accounts. The matching portal opens with no MetaMask
   needed.
 
 Useful demo accounts:
@@ -125,9 +130,12 @@ Useful demo accounts:
 | # | Role | Try |
 | --- | --- | --- |
 | 0 | INEC Admin | Lifecycle, geography, stakeholders, credentials |
-| 4 | Presiding Officer, PU OY/11/01/001 | Upload EC8A. Registered voters must be **812** (the INEC register) |
-| 18, 33, 48 | PA, DC and LF agents for that PU | Sign, sign with objection, raise a dispute |
-| 1 | State Returning Officer | EC8D state collation |
+| 4 | Presiding Officer, PU 30/01/01/001 (A.U.D Pry. School) | Upload EC8A. Registered voters must be **1014** (the register) |
+| 1137, 2271, 20328 | PA, DC and LF agents for that PU | Sign, sign with objection, raise a dispute |
+| 5 | Presiding Officer, PU 30/01/01/002 (Bode Open Space I) | Upload EC8A. Registered voters must be **941** |
+| 6394 | Ward Collation Officer, Ilora I | EC8B ward collation (agents 2137, 3271, 26718) |
+| 6745 | LGA Collation Officer, Afijio | EC8C LGA collation (agents 2237, 3371, 27069) |
+| 1 | State Returning Officer | EC8D state collation (agents 2270, 3404, 27102) |
 | 2 | Independent Auditor | Rulings on escalations, the audit signature |
 | 3 | Result Publisher | Declare the final result |
 
@@ -152,14 +160,14 @@ Click **Sign in** in the header (one free signature, no transaction) to enable t
 With the chain and backend running, reset everything and choose how far the demo election is already driven:
 
 ```bash
-npm run reset                 # = lga (default)
+npm run reset                 # = live (default)
 npm run reset -- none         # election configured and activated; nothing uploaded yet
-npm run reset -- lga          # LGA 2 (Akinyele) fully collated; LGA 1 left for you — the e2e walkthrough expects this
+npm run reset -- live         # all approved except PUs 1-2, ward 1, LGA 1 and the state — the e2e walkthrough expects this
 npm run reset -- all          # every PU, ward, LGA and the state approved (phase Collation); auditor and publisher next
 npm run reset -- declared     # the finished election: audit signed and result declared
 ```
 
-It takes about 8 seconds and does the following, in order:
+It takes about five minutes (about one for `none`) and does the following, in order:
 
 1. Wipes the chain **in place** (`anvil_reset` / `hardhat_reset`). You don't need to restart anvil.
 2. Drops and recreates the PostgreSQL schema, if `DATABASE_URL` is set.
@@ -171,8 +179,8 @@ Then refresh the browser. What each level leaves you to do:
 
 | Level | Phase after reset | Start the demo as… |
 | --- | --- | --- |
-| `none` | Active | Presiding Officer **#4** uploads the first EC8A (registered voters = 812) |
-| `lga` | Active | Presiding Officer **#4**, then agents **#18, #33, #48**, then Ward officer **#12**, LGA officer **#16**, state officer **#1** |
+| `none` | Active | Presiding Officer **#4** uploads the first EC8A (registered voters = 1014) |
+| `live` | Active | Presiding Officer **#4**, then agents **#1137, #2271, #20328**, PU 2 (**#5**), then Ward officer **#6394**, LGA officer **#6745**, state officer **#1** |
 | `all` | Collation | Independent Auditor **#2** signs the audit, then Result Publisher **#3** declares |
 | `declared` | Declared | Anyone: open **Public verification** to explore the complete trail |
 
@@ -184,11 +192,11 @@ through the UI show the real image.
 <summary>Manual reset (if the script can't reach your chain or database)</summary>
 
 ```bash
-# stop anvil (Ctrl+C in terminal 1), then start it again: anvil --accounts 70
+# stop anvil (Ctrl+C in terminal 1), then start it again: anvil
 docker compose down -v                 # removes the postgres container AND its data volume
 docker compose up -d postgres
 npm run deploy:local
-DEMO_PREFILL=lga npm --prefix contracts run seed:local     # or none / all / declared
+DEMO_PREFILL=live npm --prefix contracts run seed:local    # or none / all / declared
 # restart the backend (Ctrl+C, then npm run backend); refresh the browser
 ```
 
@@ -225,10 +233,10 @@ don't need an IPFS node.
 
 | Symptom | Fix |
 | --- | --- |
-| "Cannot reach the VoteChain backend" | The backend isn't running, or it can't find `contracts/deployments/localhost.json`. Run the deploy first. |
-| Yellow banner "Connection to the VoteChain backend lost" | The backend stopped or restarted. It clears by itself once the backend is back. |
+| "Cannot reach the ClearCount backend" | The backend isn't running, or it can't find `contracts/deployments/localhost.json`. Run the deploy first. |
+| Yellow banner "Connection to the ClearCount backend lost" | The backend stopped or restarted. It clears by itself once the backend is back. |
 | Activity feed shows old or impossible events | The chain was restarted but the database wasn't. Run `npm run reset`. |
-| Seed fails with "insufficient funds" or a missing account | The chain was started with fewer than 70 accounts. Use `anvil --accounts 70`. |
+| Seed fails with "supports neither hardhat_setBalance nor anvil_setBalance" | The seed funds its demo wallets through the local node; it only runs against anvil or `hardhat node`. |
 | `EADDRINUSE` on 8545 / 4000 / 5173 / 5432 | Something else is on that port (often the Docker stack from §0, or the other way round): `lsof -iTCP:<port> -sTCP:LISTEN`. Stop it, or change the port in `.env`. |
 | Docker: `deployer` exits with an error | `npm run docker:logs`. Usually the chain volume and the deployments volume are out of step; `npm run docker:reset` fixes it. |
 | Vite exits with a Node version error | Upgrade Node to 20.19 or newer. |

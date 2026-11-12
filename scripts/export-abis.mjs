@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Exports the ABI of the five VoteChain contracts from the Foundry build output
+ * Exports the ABI of the five ClearCount contracts from the Foundry build output
  * (contracts/out) — or from the Hardhat artifacts if that is what was built — into
  * contracts/abi/<Name>.json, and copies them into backend/abi and frontend/src/abi.
  *

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-/// @title VoteChainTypes
-/// @notice Shared enums, structs, errors and helpers used by every VoteChain module.
+/// @title ClearCountTypes
+/// @notice Shared enums, structs, errors and helpers used by every ClearCount module.
 /// @dev Kept in one file so that the five contracts, the tests and the off-chain
 ///      layers (backend indexer, React portals) share a single vocabulary.
-library VoteChainTypes {
+library ClearCountTypes {
     // ---------------------------------------------------------------------
     // Administrative hierarchy (Oyo State case study: PU -> Ward -> LGA -> State)
     // ---------------------------------------------------------------------

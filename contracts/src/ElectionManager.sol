@@ -2,8 +2,8 @@
 pragma solidity ^0.8.28;
 
 import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
-import { VoteChainTypes as T } from "./VoteChainTypes.sol";
-import { IElectionManager, IPartyAgentVerification } from "./interfaces/IVoteChain.sol";
+import { ClearCountTypes as T } from "./ClearCountTypes.sol";
+import { IElectionManager, IPartyAgentVerification } from "./interfaces/IClearCount.sol";
 
 /// @title ElectionManager
 /// @notice Top-level administrative contract deployed by INEC's Oyo State office to initialise an

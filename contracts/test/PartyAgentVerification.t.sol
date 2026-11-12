@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { VoteChainFixture } from "./VoteChainFixture.sol";
-import { VoteChainTypes as T } from "../src/VoteChainTypes.sol";
+import { ClearCountFixture } from "./ClearCountFixture.sol";
+import { ClearCountTypes as T } from "../src/ClearCountTypes.sol";
 import { PartyAgentVerification as PAV } from "../src/PartyAgentVerification.sol";
 
-contract PartyAgentVerificationTest is VoteChainFixture {
+contract PartyAgentVerificationTest is ClearCountFixture {
     T.Level constant PU = T.Level.PollingUnit;
 
     function setUp() public override {

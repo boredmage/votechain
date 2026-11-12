@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { activeVoteChain, loadFixture, toFigures, Level, STATE_UNIT_ID } = require("./fixture");
+const { activeClearCount, loadFixture, toFigures, Level, STATE_UNIT_ID } = require("./fixture");
 const { ResultStatus, Phase } = require("../hardhat/lib");
 
 const PU = Level.PollingUnit;
@@ -7,7 +7,7 @@ const STATE = Number(STATE_UNIT_ID);
 
 describe("Full simulated election — polling unit to state declaration", function () {
   it("runs the complete chain with a dispute, an objection, a manipulated ward total and an escalation", async function () {
-    const ctx = await loadFixture(activeVoteChain);
+    const ctx = await loadFixture(activeClearCount);
     const { upload, verification, collation, audit, agents, po, wardCo, publisher, auditor } = ctx;
 
     // 1. EC8A uploads

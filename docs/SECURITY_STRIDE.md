@@ -21,7 +21,7 @@ Trust boundaries: (a) wallet ↔ portal (browser), (b) portal ↔ backend (HTTPS
 
 ## 2. STRIDE analysis
 
-| # | Threat | Category | Attack | Mitigation in VoteChain | Residual risk |
+| # | Threat | Category | Attack | Mitigation in ClearCount | Residual risk |
 |---|---|---|---|---|---|
 | S1 | Impersonating a presiding officer to upload figures | Spoofing | attacker submits `submitResult` for a PU | `presidingOfficerOf[puId] == msg.sender`; wallet key never leaves MetaMask; DID credential issued by INEC binds address ↔ role | key theft (out of scope: hardware wallets recommended) |
 | S2 | Forged party-agent signature | Spoofing | sign as another party's agent | `isAgentFor` scope check (level + unit + party); one category per address | key theft |

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { VoteChainFixture } from "./VoteChainFixture.sol";
-import { VoteChainTypes as T } from "../src/VoteChainTypes.sol";
+import { ClearCountFixture } from "./ClearCountFixture.sol";
+import { ClearCountTypes as T } from "../src/ClearCountTypes.sol";
 import { CollationEngine } from "../src/CollationEngine.sol";
 import { PartyAgentVerification as PAV } from "../src/PartyAgentVerification.sol";
 
-contract CollationEngineTest is VoteChainFixture {
+contract CollationEngineTest is ClearCountFixture {
     function setUp() public override {
         super.setUp();
         activate();

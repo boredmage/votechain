@@ -75,7 +75,7 @@ export function AuditorPortal() {
                 title="Sign the state result hash"
                 description={
                   <>
-                    Step 1 signs <code>auditDigest()</code> = keccak256("VoteChain.AuditApproval", chainId, contract, stateResultHash) with your wallet (EIP-191). Step 2 submits the signature; the contract recovers the signer with{" "}
+                    Step 1 signs <code>auditDigest()</code> = keccak256("ClearCount.AuditApproval", chainId, contract, stateResultHash) with your wallet (EIP-191). Step 2 submits the signature; the contract recovers the signer with{" "}
                     <code>ecrecover</code> and only accepts the registered auditor.
                   </>
                 }

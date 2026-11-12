@@ -2,8 +2,8 @@
 pragma solidity ^0.8.28;
 
 import { console2 } from "forge-std/console2.sol";
-import { VoteChainFixture } from "../VoteChainFixture.sol";
-import { VoteChainTypes as T } from "../../src/VoteChainTypes.sol";
+import { ClearCountFixture } from "../ClearCountFixture.sol";
+import { ClearCountTypes as T } from "../../src/ClearCountTypes.sol";
 import { ElectionManager } from "../../src/ElectionManager.sol";
 import { ResultUpload } from "../../src/ResultUpload.sol";
 import { PartyAgentVerification } from "../../src/PartyAgentVerification.sol";
@@ -19,7 +19,7 @@ import { AuditDeclaration } from "../../src/AuditDeclaration.sol";
 ///         gas + 21,000 intrinsic + 16 gas per calldata byte (upper bound), i.e. what the tx needs.
 ///
 ///         Run:  forge test --match-contract GasScalingTest -vv
-contract GasScalingTest is VoteChainFixture {
+contract GasScalingTest is ClearCountFixture {
     uint256 internal constant BLOCK_LIMIT = 30_000_000;
     uint256 internal C; // candidates in the current build
 

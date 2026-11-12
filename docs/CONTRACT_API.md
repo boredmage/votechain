@@ -1,7 +1,7 @@
 # Smart-contract API reference
 
 Solidity 0.8.28 · OpenZeppelin Contracts 5.x · one deployment = one election. Enum values are listed in
-`contracts/src/VoteChainTypes.sol`; the same names are used by the backend (`chain.js`) and frontend
+`contracts/src/ClearCountTypes.sol`; the same names are used by the backend (`chain.js`) and frontend
 (`constants.js`).
 
 Enums: `Level {PollingUnit, Ward, LGA, State}` · `Phase {Registration, Active, Collation, Declared}` ·
@@ -114,7 +114,7 @@ status)`, `EmptyFormCid`, `NotOperational`, shared `InvalidStatus`, `UnknownUnit
 | Function | Caller | Purpose |
 |---|---|---|
 | `stateResultHash()` | view | current hash of the approved state figures |
-| `auditDigest()` | view | `keccak256(abi.encode("VoteChain.AuditApproval", chainId, address(this), stateResultHash()))` — signed with `personal_sign` (EIP-191) |
+| `auditDigest()` | view | `keccak256(abi.encode("ClearCount.AuditApproval", chainId, address(this), stateResultHash()))` — signed with `personal_sign` (EIP-191) |
 | `isReadyForAudit() → (ready, reason)` | view | state Approved, no pending escalations, not yet audited |
 | `verifyAndSign(signature, reportCid)` | anyone (the signature is the authorisation) | recovers the signer with `ECDSA.recover(toEthSignedMessageHash(auditDigest()))`; must equal `election.auditor()`; sets `auditApproved` |
 | `declareResult()` | result publisher | requires `auditApproved`, hash unchanged, not declared; computes winner (tie flagged), marks state Declared and the election Declared |

@@ -6,7 +6,7 @@ Captured automatically by `frontend/e2e/walkthrough.mjs` while driving the seede
 | File | Step |
 |---|---|
 | 01-public.png | Public verification portal — election summary and live collation tree |
-| 02-public-ward3.png | Ward detail (Akinyele, pre-collated) with EC8B figures, signatures and recomputed-sum comparison |
+| 02-public-ward3.png | Ward detail (Arulogun/Eniosa/Aroro, Akinyele LGA, pre-collated) with EC8B figures, signatures and recomputed-sum comparison |
 | 03-po-empty.png · 04-po-filled.png | Presiding-officer EC8A form, live six-rule check, IPFS pinning |
 | 05-po-submitted.png | Result on-chain, pending signatures, figures hash |
 | 06-agent-review.png | Party-agent review: sign / sign with objection / dispute |

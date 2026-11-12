@@ -1,4 +1,4 @@
-/* VoteChain — HeroUI v3 (Tailwind CSS v4) theme.
+/* ClearCount — HeroUI v3 (Tailwind CSS v4) theme.
  * Components come from @heroui/react; layout uses Tailwind utilities. Only the brand colours and a
  * handful of domain-specific helpers (hashes, hierarchy tree, timeline) are defined here. */
 @import "tailwindcss";
@@ -27,6 +27,9 @@
 :root:not(.dark),
 [data-theme="light"] {
   --accent: oklch(0.46 0.11 158);
+  /* the ClearCount mark (public/logo-light.svg, logo-dark.svg) */
+  --brand-mark: #0b7a4b;
+  --brand-mark-ink: #ffffff;
   --accent-foreground: oklch(0.99 0 0);
   --focus: var(--accent);
   --link: var(--accent);
@@ -39,6 +42,8 @@
 :root.dark,
 [data-theme="dark"] {
   --accent: oklch(0.74 0.15 158);
+  --brand-mark: #3dd68c;
+  --brand-mark-ink: #06281a;
   --accent-foreground: oklch(0.2 0.02 160);
   --focus: var(--accent);
   --link: var(--accent);

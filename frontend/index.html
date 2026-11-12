@@ -6,13 +6,33 @@
     <script>
       // apply the saved / system colour scheme before first paint (no flash)
       try {
-        var t = localStorage.getItem("votechain.theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        var t = localStorage.getItem("clearcount.theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
         document.documentElement.className = t;
         document.documentElement.dataset.theme = t;
       } catch (e) {}
     </script>
-    <title>VoteChain — Electoral Result Collation</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f5132'/%3E%3Cpath d='M9 17l5 5 9-11' stroke='%23fff' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <title>ClearCount — Electoral Result Collation</title>
+    <meta name="description" content="ClearCount: blockchain-based electoral result collation and multi-party verification, from polling unit to state. Every figure, signature and dispute is publicly verifiable." />
+    <meta name="theme-color" content="#0B7A4B" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#06281A" media="(prefers-color-scheme: dark)" />
+    <!-- favicon.svg follows the browser's light/dark scheme; the PNGs are fallbacks -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <!-- link previews: %SITE_URL% is VITE_SITE_URL at build time (scrapers need an absolute image URL) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ClearCount" />
+    <meta property="og:title" content="ClearCount — Electoral Result Collation" />
+    <meta property="og:description" content="Blockchain-based electoral result collation and multi-party verification, from polling unit to state. Publicly verifiable." />
+    <meta property="og:url" content="%SITE_URL%/" />
+    <meta property="og:image" content="%SITE_URL%/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="ClearCount — electoral result collation and public verification" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ClearCount — Electoral Result Collation" />
+    <meta name="twitter:description" content="Blockchain-based electoral result collation and multi-party verification, from polling unit to state." />
+    <meta name="twitter:image" content="%SITE_URL%/og.png" />
   </head>
   <body class="bg-background text-foreground">
     <div id="root"></div>

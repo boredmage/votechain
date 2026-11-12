@@ -1,5 +1,5 @@
 /**
- * Live simulation on a running node (Hardhat node or Anvil): deploys a fresh VoteChain system,
+ * Live simulation on a running node (Hardhat node or Anvil): deploys a fresh ClearCount system,
  * builds an Oyo-style geography and drives the complete collation chain while measuring
  * wall-clock throughput, end-to-end latency and gas (Section 3.11.2).
  *
@@ -50,7 +50,7 @@ async function main() {
     return receipt;
   };
 
-  console.log(`\nVoteChain live simulation — scale=${scale}: ${cfg.lgas} LGA(s) x ${cfg.wardsPerLga} wards x ${cfg.pusPerWard} PUs`);
+  console.log(`\nClearCount live simulation — scale=${scale}: ${cfg.lgas} LGA(s) x ${cfg.wardsPerLga} wards x ${cfg.pusPerWard} PUs`);
   const t0 = Date.now();
   const { election, upload, verification, collation, audit } = await deploySystem(admin);
   const em = election.connect(admin);

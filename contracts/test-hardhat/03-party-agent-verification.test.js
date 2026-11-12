@@ -1,12 +1,12 @@
 const { expect } = require("chai");
-const { activeVoteChain, loadFixture, figures, Level } = require("./fixture");
+const { activeClearCount, loadFixture, figures, Level } = require("./fixture");
 const { ResultStatus } = require("../hardhat/lib");
 
 const PU = Level.PollingUnit;
 const DisputeStatus = { Raised: 0, Resolved: 1, Accepted: 2, Escalated: 3, RuledDismissed: 4, RuledUpheld: 5 };
 
 async function submitted() {
-  const ctx = await activeVoteChain();
+  const ctx = await activeClearCount();
   await ctx.submitPu(1, ctx.goodFigures());
   return ctx;
 }

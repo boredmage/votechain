@@ -7,7 +7,7 @@ require("dotenv").config({ path: require("node:path").join(__dirname, "..", ".en
  *
  *   npx hardhat compile
  *   npx hardhat test
- *   npx hardhat node                      # local chain with 70 pre-funded demo accounts
+ *   npx hardhat node                      # local chain (the seed funds its own 27,103 demo accounts)
  *   npx hardhat run hardhat/deploy.js --network localhost
  *   npx hardhat run hardhat/seed-demo.js --network localhost
  *   npx hardhat run hardhat/deploy.js --network sepolia

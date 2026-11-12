@@ -3,12 +3,12 @@ pragma solidity ^0.8.28;
 
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { MessageHashUtils } from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import { VoteChainFixture } from "./VoteChainFixture.sol";
-import { VoteChainTypes as T } from "../src/VoteChainTypes.sol";
+import { ClearCountFixture } from "./ClearCountFixture.sol";
+import { ClearCountTypes as T } from "../src/ClearCountTypes.sol";
 import { AuditDeclaration } from "../src/AuditDeclaration.sol";
 import { PartyAgentVerification as PAV } from "../src/PartyAgentVerification.sol";
 
-contract AuditDeclarationTest is VoteChainFixture {
+contract AuditDeclarationTest is ClearCountFixture {
     function setUp() public override {
         super.setUp();
         activate();
@@ -184,7 +184,7 @@ contract AuditDeclarationTest is VoteChainFixture {
     function test_digestIsDomainSeparated() public {
         runToStateApproved();
         bytes32 expected = keccak256(
-            abi.encode("VoteChain.AuditApproval", block.chainid, address(audit), audit.stateResultHash())
+            abi.encode("ClearCount.AuditApproval", block.chainid, address(audit), audit.stateResultHash())
         );
         assertEq(audit.auditDigest(), expected);
     }

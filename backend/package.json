@@ -1,9 +1,9 @@
 {
-  "name": "votechain-backend",
+  "name": "clearcount-backend",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "VoteChain off-chain services: IPFS form pipeline, PostgreSQL display cache, event indexer, notifications and REST API",
+  "description": "ClearCount off-chain services: IPFS form pipeline, PostgreSQL display cache, event indexer, notifications and REST API",
   "license": "MIT",
   "engines": { "node": ">=18.17" },
   "main": "src/server.js",

@@ -1,8 +1,8 @@
 {
-  "name": "votechain-contracts",
+  "name": "clearcount-contracts",
   "version": "1.0.0",
   "private": true,
-  "description": "VoteChain smart contracts: blockchain-based electoral result collation with hierarchical multi-party verification (Oyo State case study)",
+  "description": "ClearCount smart contracts: blockchain-based electoral result collation with hierarchical multi-party verification (Oyo State case study)",
   "license": "MIT",
   "scripts": {
     "compile": "hardhat compile",
@@ -11,7 +11,7 @@
     "node": "hardhat node",
     "deploy:local": "hardhat run hardhat/deploy.js --network localhost",
     "seed:local": "hardhat run hardhat/seed-demo.js --network localhost",
-    "seed:local:prefill": "DEMO_PREFILL=1 hardhat run hardhat/seed-demo.js --network localhost",
+    "seed:local:prefill": "DEMO_PREFILL=live hardhat run hardhat/seed-demo.js --network localhost",
     "simulate:local": "hardhat run hardhat/simulate.js --network localhost",
     "deploy:sepolia": "hardhat run hardhat/deploy.js --network sepolia",
     "verify:sepolia": "hardhat run hardhat/verify.js --network sepolia",
@@ -19,7 +19,7 @@
     "slither": "slither . --filter-paths lib,node_modules --exclude-dependencies --config-file slither.config.json",
     "forge:test": "forge test",
     "forge:benchmark": "forge test --match-contract BenchmarkTest -vv",
-    "forge:benchmark:full": "VOTECHAIN_FULL_SCALE=1 forge test --match-test test_fullOyoState -vv"
+    "forge:benchmark:full": "CLEARCOUNT_FULL_SCALE=1 forge test --match-test test_fullOyoState -vv"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",

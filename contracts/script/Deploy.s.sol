@@ -8,7 +8,7 @@ import { PartyAgentVerification } from "../src/PartyAgentVerification.sol";
 import { CollationEngine } from "../src/CollationEngine.sol";
 import { AuditDeclaration } from "../src/AuditDeclaration.sol";
 
-/// @notice Deploys the five VoteChain modules and wires them together.
+/// @notice Deploys the five ClearCount modules and wires them together.
 ///
 ///   Local (Anvil / Hardhat node on :8545):
 ///     forge script script/Deploy.s.sol --rpc-url localhost --broadcast

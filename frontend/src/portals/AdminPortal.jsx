@@ -375,7 +375,7 @@ function GeographySetup() {
             <Picker label="Ward" items={geo.wards} value={pus.wardId} onChange={(v) => setPus({ ...pus, wardId: v })} isDisabled={!reg} />
             <TextField className="w-full" value={pus.lines} onChange={(v) => setPus({ ...pus, lines: v })} isDisabled={!reg}>
               <Label className="text-sm font-medium">Polling units</Label>
-              <TextArea variant="secondary" rows={5} className="w-full font-mono text-sm" placeholder={"OY/11/01/003, St. Anne's Primary School, 640\nOY/11/01/004, Town Hall, 512"} />
+              <TextArea variant="secondary" rows={5} className="w-full font-mono text-sm" placeholder={"30/01/01/012, Open Space Onigbongbo II, 640\n30/01/01/013, Town Hall, 512"} />
             </TextField>
             {parsed.errors.length ? (
               <Alert kind="danger" title="Fix these lines">
@@ -415,10 +415,13 @@ const AGENT_LEVELS = [
   ["State", "State", null],
 ];
 
+/** Rows listed in the stakeholder table: a state-scale election registers tens of thousands of wallets. */
+const STAKEHOLDER_ROWS_SHOWN = 200;
+
 function Stakeholders() {
   const { election, sendTx, busy } = useApp();
   const geo = useGeoOptions();
-  const list = usePolled(() => api.stakeholders().catch(() => null), [], 10000);
+  const list = usePolled(() => api.stakeholders({ limit: STAKEHOLDER_ROWS_SHOWN + 1 }).catch(() => null), [], 10000);
   const [officer, setOfficer] = useState({ kind: "PresidingOfficer", address: "", unitId: "" });
   const [agent, setAgent] = useState({ address: "", partyId: "", level: "PollingUnit", unitId: "" });
   const [revoke, setRevoke] = useState("");
@@ -482,7 +485,7 @@ function Stakeholders() {
           </div>
         </Panel>
       </div>
-      <Panel title="Registered stakeholders" description={list.data?.length ? `${list.data.length} wallets` : null}>
+      <Panel title="Registered stakeholders" description={list.data?.length ? (list.data.length > STAKEHOLDER_ROWS_SHOWN ? `Showing the first ${STAKEHOLDER_ROWS_SHOWN} wallets; look up any other address in the Credentials tab.` : `${list.data.length} wallets`) : null}>
         {list.loading ? <Loading /> : null}
         {!list.loading && list.data === null ? <Empty>Listing needs the PostgreSQL cache (DATABASE_URL); on-chain lookups by address still work in the Credentials tab.</Empty> : null}
         {list.data?.length === 0 ? <Empty>None yet.</Empty> : null}
@@ -497,7 +500,7 @@ function Stakeholders() {
                   <Table.Column>Address</Table.Column>
                 </Table.Header>
                 <Table.Body>
-                  {list.data.map((s) => (
+                  {list.data.slice(0, STAKEHOLDER_ROWS_SHOWN).map((s) => (
                     <Table.Row key={s.address} id={s.address}>
                       <Table.Cell>{CATEGORY_LABEL[s.category] ?? s.category}</Table.Cell>
                       <Table.Cell className="text-sm">

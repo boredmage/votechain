@@ -1,18 +1,19 @@
 /**
  * Entrypoint of the `deployer` service in docker-compose.yml: waits for the local chain, then
- * deploys the five contracts and seeds the demo election. A deployment that is already on the chain
+ * deploys the five contracts and seeds the demo election (Oyo State: 33 LGAs, 351 wards, 6,390
+ * polling units; several minutes). A deployment that is already on the chain
  * (deployments/localhost.json points at live code and demo-accounts.json exists) is left alone, so
  * `docker compose up` is idempotent; `docker compose down -v` wipes everything for a fresh seed.
  *
  *   LOCAL_RPC_URL   chain RPC URL                             (default http://127.0.0.1:8545)
- *   DEMO_PREFILL    none | lga | all | declared               (default lga, see seed-demo.js)
+ *   DEMO_PREFILL    none | live | all | declared              (default live, see seed-demo.js)
  */
 const { execSync } = require("node:child_process");
 const { existsSync, readFileSync } = require("node:fs");
 const path = require("node:path");
 
 const RPC_URL = process.env.LOCAL_RPC_URL || "http://127.0.0.1:8545";
-const PREFILL = (process.env.DEMO_PREFILL || "lga").toLowerCase();
+const PREFILL = (process.env.DEMO_PREFILL || "live").toLowerCase();
 const WAIT_MS = Number(process.env.CHAIN_WAIT_MS || 120000);
 
 const root = path.join(__dirname, "..");

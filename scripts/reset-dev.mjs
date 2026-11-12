@@ -3,7 +3,7 @@
  * One-command development reset: fresh chain state, empty PostgreSQL cache, redeployed contracts,
  * a seeded demo election at the chosen prefill level, and a backend restart.
  *
- *   npm run reset                 # prefill "lga"  — LGA 2 pre-collated, LGA 1 left for you (default)
+ *   npm run reset                 # prefill "live" — everything approved except polling units 1-2, ward 1, LGA 1 and the state (default)
  *   npm run reset -- none         # configured + activated, nothing uploaded
  *   npm run reset -- all          # every unit approved up to the state; the auditor and publisher are next
  *   npm run reset -- declared     # the finished election: audited and declared
@@ -18,8 +18,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const LEVELS = ["none", "lga", "all", "declared"];
-const level = (process.argv[2] ?? "lga").toLowerCase();
+const LEVELS = ["none", "live", "all", "declared"];
+const requested = (process.argv[2] ?? "live").toLowerCase();
+const level = requested === "lga" ? "live" : requested; // "lga" was the name of this level in the 8-unit demo
 if (!LEVELS.includes(level)) {
   console.error(`Unknown prefill level "${level}". Use one of: ${LEVELS.join(", ")}`);
   process.exit(1);
@@ -50,7 +51,7 @@ step(`Resetting the chain at ${RPC_URL}`);
 try {
   await rpc("eth_chainId");
 } catch {
-  console.error(`No chain at ${RPC_URL}. Start one first:  anvil --accounts 70   (or: npm run chain)`);
+  console.error(`No chain at ${RPC_URL}. Start one first:  anvil   (or: npm run chain)`);
   process.exit(1);
 }
 let reset = false;
@@ -109,7 +110,7 @@ console.log("  If you started the backend another way, restart it now.");
 console.log(`\n✓ Reset complete (prefill: ${level}). Refresh http://localhost:5173`);
 const next = {
   none: "Act as Presiding Officer #4 to upload the first EC8A.",
-  lga: "LGA 2 is collated. Drive LGA 1 yourself: Presiding Officer #4 → party agents #18, #33, #48 → Ward officer #12 …",
+  live: "All but the live slice is approved. Drive it yourself: Presiding Officer #4 → party agents #1137, #2271, #20328 → PU 2 (#5) → Ward officer #6394 → LGA officer #6745 → State officer #1 …",
   all: "Every level is approved. Act as the Independent Auditor (#2) to sign, then the Result Publisher (#3) to declare.",
   declared: "The election is declared. Open Public verification to explore the full audit trail.",
 }[level];

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# deploy.sh: deploy / update VoteChain on a VPS with Docker.
+# deploy.sh: deploy / update ClearCount on a VPS with Docker.
 #
 # Brings up the stack in docker-compose.prod.yml:
-#   * votechain-api          Express API (+ filtered chain RPC at /api/rpc)  -> api.<domain>
-#   * votechain-dashboard    nginx serving the React app                     -> dashboard.<domain>
-#   * votechain-prod-chain / -postgres / -deployer (/ -ipfs)  internal only, no public ports
+#   * clearcount-api          Express API (+ filtered chain RPC at /api/rpc)  -> api.<domain>
+#   * clearcount-dashboard    nginx serving the React app                     -> dashboard.<domain>
+#   * clearcount-prod-chain / -postgres / -deployer (/ -ipfs)  internal only, no public ports
 # The API and the dashboard join the shared `web` network so the GLOBAL Caddy can reach them by name.
 #
 # Usage:
@@ -30,10 +30,10 @@ warn() { printf '\033[1;33m[warn]\033[0m %s\n' "$*"; }
 die()  { printf '\033[1;31m[error]\033[0m %s\n' "$*" >&2; exit 1; }
 
 ENV_FILE=.env.prod
-API_CONTAINER=votechain-api
-WEB_CONTAINER=votechain-dashboard
-IMAGES="votechain-api votechain-dashboard votechain-deployer"
-VOLUMES="votechain-prod-chain votechain-prod-pg votechain-prod-deployments votechain-prod-uploads votechain-prod-ipfs"
+API_CONTAINER=clearcount-api
+WEB_CONTAINER=clearcount-dashboard
+IMAGES="clearcount-api clearcount-dashboard clearcount-deployer"
+VOLUMES="clearcount-prod-chain clearcount-prod-pg clearcount-prod-deployments clearcount-prod-uploads clearcount-prod-ipfs"
 
 # --- Resolve the compose command (v2 plugin vs legacy v1) -------------------
 if docker compose version >/dev/null 2>&1; then
@@ -128,10 +128,10 @@ setup_env() {
   case "$demo" in [Nn]*) demo=false ;; *) demo=true ;; esac
 
   echo
-  echo "    How far the demo election is pre-filled on first start: none | lga | all | declared"
+  echo "    How far the demo election is pre-filled on first start: none | live | all | declared"
   ask prefill "Seed level" "$(env_val DEMO_PREFILL)"
-  prefill="${prefill:-lga}"
-  case "$prefill" in none|lga|all|declared) ;; *) warn "Unknown seed level '$prefill', using lga."; prefill=lga ;; esac
+  prefill="${prefill:-live}"
+  case "$prefill" in none|live|all|declared) ;; lga) prefill=live ;; *) warn "Unknown seed level '$prefill', using live."; prefill=live ;; esac
 
   echo
   echo "    Where scanned result forms are stored: local (disk volume), pinata, or kubo (own IPFS node)"
@@ -164,7 +164,7 @@ DASHBOARD_URL=https://$dash
 
 # Role switcher with the public test keys (see deploy.sh setup)
 DEMO_MODE=$demo
-# Seed level for the first start / after ./deploy.sh reset: none | lga | all | declared
+# Seed level for the first start / after ./deploy.sh reset: none | live | all | declared
 DEMO_PREFILL=$prefill
 
 # local | pinata | kubo
@@ -251,24 +251,24 @@ case "${1:-}" in
     exit 0
     ;;
   backup)
-    docker volume inspect votechain-prod-chain >/dev/null 2>&1 || die "No votechain-prod-chain volume yet: nothing to back up."
+    docker volume inspect clearcount-prod-chain >/dev/null 2>&1 || die "No clearcount-prod-chain volume yet: nothing to back up."
     stamp="$(date +%Y%m%d-%H%M%S)"
-    work="backups/votechain-$stamp"
+    work="backups/clearcount-$stamp"
     mkdir -p "$work"
-    log "Backing up to backups/votechain-$stamp.tar.gz ..."
+    log "Backing up to backups/clearcount-$stamp.tar.gz ..."
     # The chain state is the source of truth; PostgreSQL is a cache the indexer can rebuild, but
     # a dump makes restoring quicker.
-    if running votechain-prod-postgres; then
-      docker exec votechain-prod-postgres pg_dump -U votechain votechain > "$work/postgres.sql"
+    if running clearcount-prod-postgres; then
+      docker exec clearcount-prod-postgres pg_dump -U clearcount clearcount > "$work/postgres.sql"
     else
       warn "PostgreSQL is not running: no database dump (the indexer rebuilds it from the chain)."
     fi
-    for vol in votechain-prod-chain votechain-prod-deployments votechain-prod-uploads; do
+    for vol in clearcount-prod-chain clearcount-prod-deployments clearcount-prod-uploads; do
       docker run --rm -v "$vol":/data:ro -v "$PWD/$work":/out alpine tar czf "/out/$vol.tar.gz" -C /data .
     done
-    tar czf "backups/votechain-$stamp.tar.gz" -C backups "votechain-$stamp" && rm -rf "$work"
-    chmod 600 "backups/votechain-$stamp.tar.gz"
-    log "Done: backups/votechain-$stamp.tar.gz"
+    tar czf "backups/clearcount-$stamp.tar.gz" -C backups "clearcount-$stamp" && rm -rf "$work"
+    chmod 600 "backups/clearcount-$stamp.tar.gz"
+    log "Done: backups/clearcount-$stamp.tar.gz"
     exit 0
     ;;
   rollback)

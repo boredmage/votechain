@@ -27,7 +27,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -37,7 +37,7 @@
       {
         "name": "declared",
         "type": "tuple",
-        "internalType": "struct VoteChainTypes.Figures",
+        "internalType": "struct ClearCountTypes.Figures",
         "components": [
           {
             "name": "registeredVoters",
@@ -81,7 +81,7 @@
       {
         "name": "field",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Field"
+        "internalType": "enum ClearCountTypes.Field"
       },
       {
         "name": "candidateIndex",
@@ -108,7 +108,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -120,7 +120,7 @@
       {
         "name": "agg",
         "type": "tuple",
-        "internalType": "struct VoteChainTypes.Figures",
+        "internalType": "struct ClearCountTypes.Figures",
         "components": [
           {
             "name": "registeredVoters",
@@ -174,7 +174,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -184,7 +184,7 @@
       {
         "name": "declared",
         "type": "tuple",
-        "internalType": "struct VoteChainTypes.Figures",
+        "internalType": "struct ClearCountTypes.Figures",
         "components": [
           {
             "name": "registeredVoters",
@@ -253,7 +253,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -277,7 +277,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -304,7 +304,7 @@
           {
             "name": "figures",
             "type": "tuple",
-            "internalType": "struct VoteChainTypes.Figures",
+            "internalType": "struct ClearCountTypes.Figures",
             "components": [
               {
                 "name": "registeredVoters",
@@ -380,7 +380,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -392,7 +392,7 @@
       {
         "name": "",
         "type": "tuple",
-        "internalType": "struct VoteChainTypes.Figures",
+        "internalType": "struct ClearCountTypes.Figures",
         "components": [
           {
             "name": "registeredVoters",
@@ -436,7 +436,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -486,7 +486,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -503,7 +503,7 @@
       {
         "name": "field",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Field"
+        "internalType": "enum ClearCountTypes.Field"
       },
       {
         "name": "candidateIndex",
@@ -531,7 +531,7 @@
         "name": "level",
         "type": "uint8",
         "indexed": true,
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -580,7 +580,7 @@
         "name": "level",
         "type": "uint8",
         "indexed": true,
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -598,7 +598,7 @@
         "name": "field",
         "type": "uint8",
         "indexed": false,
-        "internalType": "enum VoteChainTypes.Field"
+        "internalType": "enum ClearCountTypes.Field"
       },
       {
         "name": "candidateIndex",
@@ -639,7 +639,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       }
     ]
   },
@@ -650,7 +650,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -660,7 +660,7 @@
       {
         "name": "current",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.ResultStatus"
+        "internalType": "enum ClearCountTypes.ResultStatus"
       }
     ]
   },
@@ -671,7 +671,7 @@
       {
         "name": "lowerLevel",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -681,7 +681,7 @@
       {
         "name": "status",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.ResultStatus"
+        "internalType": "enum ClearCountTypes.ResultStatus"
       }
     ]
   },
@@ -697,7 +697,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",
@@ -713,7 +713,7 @@
       {
         "name": "phase",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Phase"
+        "internalType": "enum ClearCountTypes.Phase"
       }
     ]
   },
@@ -724,7 +724,7 @@
       {
         "name": "level",
         "type": "uint8",
-        "internalType": "enum VoteChainTypes.Level"
+        "internalType": "enum ClearCountTypes.Level"
       },
       {
         "name": "unitId",

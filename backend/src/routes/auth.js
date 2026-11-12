@@ -15,13 +15,13 @@ const wrap = (fn) => (req, res, next) => fn(req, res, next).catch(next);
 
 export function loginMessage(address, nonce, chainId) {
   return [
-    "VoteChain sign-in",
+    "ClearCount sign-in",
     "",
     `Wallet: ${address}`,
     `Chain ID: ${chainId}`,
     `Nonce: ${nonce}`,
     "",
-    "This signature only authenticates you to the VoteChain portal. It does not send a transaction.",
+    "This signature only authenticates you to the ClearCount portal. It does not send a transaction.",
   ].join("\n");
 }
 

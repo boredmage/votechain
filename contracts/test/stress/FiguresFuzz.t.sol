@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { VoteChainFixture } from "../VoteChainFixture.sol";
-import { VoteChainTypes as T } from "../../src/VoteChainTypes.sol";
+import { ClearCountFixture } from "../ClearCountFixture.sol";
+import { ClearCountTypes as T } from "../../src/ClearCountTypes.sol";
 import { ResultUpload } from "../../src/ResultUpload.sol";
 import { CollationEngine } from "../../src/CollationEngine.sol";
 import { AuditDeclaration } from "../../src/AuditDeclaration.sol";
@@ -18,7 +18,7 @@ contract ChecksHarness {
 
 /// @notice Stateless fuzzing of the six arithmetic rules (Table 3.2), the register cross-check, the
 ///         rule-6 collation equality, and the audit-signature checks.
-contract FiguresFuzzTest is VoteChainFixture {
+contract FiguresFuzzTest is ClearCountFixture {
     ChecksHarness internal h;
 
     function setUp() public override {
@@ -225,7 +225,7 @@ contract FiguresFuzzTest is VoteChainFixture {
     function test_signatureNotReusableForDifferentStateResult() public {
         // a signature made over one state hash is useless for another: build digest manually
         runToStateApproved();
-        bytes32 fake = keccak256(abi.encode("VoteChain.AuditApproval", block.chainid, address(audit), bytes32(uint256(1))));
+        bytes32 fake = keccak256(abi.encode("ClearCount.AuditApproval", block.chainid, address(audit), bytes32(uint256(1))));
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(auditorPk, MessageHashUtils.toEthSignedMessageHash(fake));
         vm.expectRevert();
         audit.verifyAndSign(abi.encodePacked(r, s, v), "cid");

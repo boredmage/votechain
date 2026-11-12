@@ -1,4 +1,4 @@
--- VoteChain display cache (Storage Layer, Section 3.3.5).
+-- ClearCount display cache (Storage Layer, Section 3.3.5).
 -- The blockchain is the authoritative record; these tables are rebuilt from contract events by
 -- src/indexer.js and hold session tokens, cached summaries and the notification queue.
 

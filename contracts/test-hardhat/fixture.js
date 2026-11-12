@@ -1,5 +1,5 @@
 /**
- * Shared Mocha fixture mirroring test/VoteChainFixture.sol: 2 LGAs x 2 wards x 2 polling units,
+ * Shared Mocha fixture mirroring test/ClearCountFixture.sol: 2 LGAs x 2 wards x 2 polling units,
  * 3 parties, one agent per party at every unit. Uses the 70 Hardhat accounts:
  *   0 admin | 1 SRO | 2 auditor | 3 publisher | 4-11 presiding officers | 12-15 ward COs |
  *   16-17 LGA COs | 18-62 party agents
@@ -18,7 +18,7 @@ const {
 
 const PARTIES = 3;
 
-async function deployVoteChain() {
+async function deployClearCount() {
   const signers = await ethers.getSigners();
   const [admin, sro, auditor, publisher] = signers;
   const stranger = signers[69];
@@ -153,11 +153,11 @@ async function deployVoteChain() {
   return ctx;
 }
 
-/** Same as deployVoteChain but with the election already Active. */
-async function activeVoteChain() {
-  const ctx = await deployVoteChain();
+/** Same as deployClearCount but with the election already Active. */
+async function activeClearCount() {
+  const ctx = await deployClearCount();
   await ctx.activate();
   return ctx;
 }
 
-module.exports = { deployVoteChain, activeVoteChain, loadFixture, figures, toFigures, Level, STATE_UNIT_ID };
+module.exports = { deployClearCount, activeClearCount, loadFixture, figures, toFigures, Level, STATE_UNIT_ID };

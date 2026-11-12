@@ -2,32 +2,27 @@ import { useEffect, useRef, useState } from "react";
 import { Button, Chip, ComboBox, Input, Label, ListBox, Table } from "@heroui/react";
 import { useApp } from "../hooks/useApp.jsx";
 import { CATEGORY_LABEL, LEVEL_LABEL, PHASES } from "../lib/constants.js";
-import { shortAddr, fmtTime } from "../lib/format.js";
+import { shortAddr, fmtTime, fmtNum } from "../lib/format.js";
 import { api } from "../lib/api.js";
 import { Badge, Empty, Panel, Loading } from "./common.jsx";
 
 const SCOPED = new Set(["PresidingOfficer", "PartyAgent", "WardCollationOfficer", "LgaCollationOfficer"]);
 const LEVEL_NAMES = ["PollingUnit", "Ward", "LGA", "State"];
 
-/** Order for the demo role switcher (mirrors the collation flow). */
-const ROLE_GROUPS = [
-  ["InecAdmin", "INEC"],
-  ["PresidingOfficer", "Presiding officers (EC8A)"],
-  ["PartyAgent", "Party agents"],
-  ["WardCollationOfficer", "Ward collation officers (EC8B)"],
-  ["LgaCollationOfficer", "LGA collation officers (EC8C)"],
-  ["StateReturningOfficer", "State returning officer (EC8D)"],
-  ["Auditor", "Independent auditor"],
-  ["ResultPublisher", "Result publisher"],
-];
-
+/** The ClearCount mark: a verified result (hexagon + tick) on the chain. Its colours follow the theme. */
 function Logo() {
   return (
-    <span aria-hidden className="inline-flex size-8 items-center justify-center rounded-sm bg-accent text-accent-foreground shadow-sm">
-      <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M5 12.5l4.5 4.5L19 7.5" />
-      </svg>
-    </span>
+    <svg aria-hidden viewBox="0 0 120 120" className="size-9 shrink-0" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <g stroke="var(--brand-mark)" fill="var(--brand-mark)" strokeWidth="4">
+        <line x1="11" y1="60" x2="25.4" y2="60" />
+        <line x1="94.6" y1="60" x2="109" y2="60" />
+        <circle cx="6" cy="60" r="5" stroke="none" />
+        <circle cx="114" cy="60" r="5" stroke="none" />
+        <polygon points="60,20 94.6,40 94.6,80 60,100 25.4,80 25.4,40" />
+      </g>
+      <polygon points="60,29 86.8,44.5 86.8,75.5 60,91 33.2,75.5 33.2,44.5" stroke="var(--brand-mark-ink)" strokeOpacity="0.35" strokeWidth="2" />
+      <polyline points="42,61 55,74 80,47" stroke="var(--brand-mark-ink)" strokeWidth="8" />
+    </svg>
   );
 }
 
@@ -39,7 +34,7 @@ export function ThemeToggle() {
     el.classList.add(theme);
     el.dataset.theme = theme;
     try {
-      localStorage.setItem("votechain.theme", theme);
+      localStorage.setItem("clearcount.theme", theme);
     } catch {
       /* storage unavailable */
     }
@@ -61,20 +56,45 @@ export function ThemeToggle() {
   );
 }
 
-/** Searchable demo-account picker, grouped by stakeholder category. */
+/**
+ * Searchable demo-account picker, in collation-flow order. A state-scale election has tens of
+ * thousands of accounts, so the backend searches them and only the best matches are listed.
+ */
 function RoleSwitcher() {
   const { demoAccounts, connectDemoAccount } = useApp();
+  const [text, setText] = useState("");
+  const [result, setResult] = useState(null);
+  useEffect(() => {
+    if (!demoAccounts) return undefined;
+    let stale = false;
+    const t = setTimeout(
+      () =>
+        api
+          .demoAccounts(text)
+          .then((r) => !stale && setResult(r))
+          .catch(() => {}),
+      text ? 200 : 0,
+    );
+    return () => {
+      stale = true;
+      clearTimeout(t);
+    };
+  }, [demoAccounts, text]);
   if (!demoAccounts) return null;
-  // flat list in collation-flow order (sectioned ComboBoxes currently crash React Aria's filter)
-  const ordered = ROLE_GROUPS.flatMap(([cat]) => demoAccounts.accounts.filter((a) => a.category === cat));
+  const found = result ?? demoAccounts;
+  const shown = found.accounts;
   return (
     <ComboBox
       aria-label="Demo role switcher"
       className="w-full sm:w-72"
       menuTrigger="focus"
       data-testid="role-switcher"
+      inputValue={text}
+      onInputChange={setText}
+      defaultFilter={() => true}
+      allowsEmptyCollection
       onSelectionChange={(key) => {
-        const acct = demoAccounts.accounts.find((a) => String(a.index) === String(key));
+        const acct = shown.find((a) => String(a.index) === String(key));
         if (acct) connectDemoAccount(acct.privateKey);
       }}
     >
@@ -84,8 +104,17 @@ function RoleSwitcher() {
         <ComboBox.Trigger />
       </ComboBox.InputGroup>
       <ComboBox.Popover className="max-h-[60vh]">
+        {found.matches > shown.length ? (
+          <p className="px-3 py-2 text-xs text-muted" role="status" data-testid="role-switcher-more">
+            Showing {shown.length} of {fmtNum(found.matches)} accounts. Type a role, place, code or #number to narrow.
+          </p>
+        ) : found.matches === 0 ? (
+          <p className="px-3 py-2 text-xs text-muted" role="status" data-testid="role-switcher-empty">
+            No demo account matches “{text}”.
+          </p>
+        ) : null}
         <ListBox>
-          {ordered.map((a) => (
+          {shown.map((a) => (
             <ListBox.Item key={a.index} id={String(a.index)} textValue={`${a.role} #${a.index}`} data-testid={`role-option-${a.index}`}>
               <span className="flex w-full items-center justify-between gap-3">
                 <span className="truncate">{a.role}</span>
@@ -111,7 +140,7 @@ export function TopBar() {
           <Logo />
           <div className="min-w-0 leading-tight">
             <h1 className="text-base font-semibold tracking-tight">
-              VoteChain<span className="sr-only"> — electoral result collation and public verification</span>
+              ClearCount<span className="sr-only"> — electoral result collation and public verification</span>
             </h1>
             <div className="truncate text-xs text-muted">{election?.stateName ? `${election.stateName} State · ` : ""}result collation & verification</div>
           </div>

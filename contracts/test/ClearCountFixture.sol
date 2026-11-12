@@ -4,17 +4,17 @@ pragma solidity ^0.8.28;
 import { Test } from "forge-std/Test.sol";
 import { MessageHashUtils } from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-import { VoteChainTypes as T } from "../src/VoteChainTypes.sol";
+import { ClearCountTypes as T } from "../src/ClearCountTypes.sol";
 import { ElectionManager } from "../src/ElectionManager.sol";
 import { ResultUpload } from "../src/ResultUpload.sol";
 import { PartyAgentVerification } from "../src/PartyAgentVerification.sol";
 import { CollationEngine } from "../src/CollationEngine.sol";
 import { AuditDeclaration } from "../src/AuditDeclaration.sol";
-import { IElectionManager } from "../src/interfaces/IVoteChain.sol";
+import { IElectionManager } from "../src/interfaces/IClearCount.sol";
 
 /// @notice Shared fixture: deploys the five modules and builds a configurable Oyo-style geography.
 ///         Default: 2 LGAs x 2 wards x 2 polling units, 3 parties, one agent per party at every unit.
-abstract contract VoteChainFixture is Test {
+abstract contract ClearCountFixture is Test {
     ElectionManager internal election;
     ResultUpload internal upload;
     PartyAgentVerification internal verification;

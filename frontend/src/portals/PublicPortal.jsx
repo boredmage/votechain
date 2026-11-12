@@ -27,7 +27,7 @@ export function PublicPortal() {
       <Card className="w-full">
         <Card.Header className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <Card.Title className="text-xl font-semibold tracking-tight sm:text-2xl">{election?.name ?? "VoteChain election"}</Card.Title>
+            <Card.Title className="text-xl font-semibold tracking-tight sm:text-2xl">{election?.name ?? "ClearCount election"}</Card.Title>
             <Card.Description className="mt-1 text-sm">
               {election?.electionType} · {election?.stateName} State. Every figure, signature, dispute and declaration below is read directly from the blockchain — no account needed.
             </Card.Description>
