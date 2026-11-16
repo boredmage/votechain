@@ -71,33 +71,19 @@ const send = async (p) => (await p).wait();
 /**
  * Retries a read (or a gas estimate) the node answered with BlockOutOfRangeError. A node that keeps
  * no historical state (anvil --prune-history) resolves "latest" to a block number first, and fails
- * when the next block is mined before it reads the state. Nothing was sent, so asking again is safe.
+ * when the next block lands before it reads the state. On a slow machine a large seed block takes
+ * seconds to mine and every read in that window fails, so wait between attempts (up to a minute).
+ * Nothing was sent, so asking again is safe.
  */
 async function latest(fn) {
   for (let attempt = 1; ; attempt++) {
     try {
       return await fn();
     } catch (err) {
-      if (attempt >= 5 || !/BlockOutOfRange/.test(`${err?.message} ${err?.info?.error?.message} ${err?.error?.message}`)) throw err;
+      if (attempt >= 120 || !/BlockOutOfRange/.test(`${err?.message} ${err?.info?.error?.message} ${err?.error?.message}`)) throw err;
+      await new Promise((r) => setTimeout(r, 500));
     }
   }
-}
-
-/** Runs `fn` over `items` with at most `limit` in flight. */
-async function pool(items, limit, fn) {
-  let next = 0;
-  let failed = false;
-  const worker = async () => {
-    while (next < items.length && !failed) {
-      try {
-        await fn(items[next++]);
-      } catch (err) {
-        failed = true; // the other workers finish their current unit and stop
-        throw err;
-      }
-    }
-  };
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
 }
 
 async function main() {

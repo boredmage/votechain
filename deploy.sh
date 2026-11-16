@@ -249,6 +249,9 @@ case "${1:-}" in
     warn "deploys fresh contracts and seeds a new demo election (seed level: $(env_val DEMO_PREFILL))."
     ask confirm "Type 'reset' to continue" ""
     [ "$confirm" = "reset" ] || die "Cancelled."
+    # Build first: the fresh seed must run the current code, not whatever image is lying around.
+    log "Building images..."
+    $COMPOSE build
     $COMPOSE down -v
     log "Starting a fresh election..."
     start_stack
