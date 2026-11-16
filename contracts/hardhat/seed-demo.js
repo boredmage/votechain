@@ -86,6 +86,23 @@ async function latest(fn) {
   }
 }
 
+/** Runs `fn` over `items` with at most `limit` in flight. */
+async function pool(items, limit, fn) {
+  let next = 0;
+  let failed = false;
+  const worker = async () => {
+    while (next < items.length && !failed) {
+      try {
+        await fn(items[next++]);
+      } catch (err) {
+        failed = true; // the other workers finish their current unit and stop
+        throw err;
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+}
+
 async function main() {
   if (!PREFILL_LEVELS.includes(PREFILL)) throw new Error(`DEMO_PREFILL must be one of ${PREFILL_LEVELS.join(", ")} (got "${rawPrefill}")`);
   // A plain JSON-RPC provider rather than Hardhat's: it folds concurrent calls into batched requests
