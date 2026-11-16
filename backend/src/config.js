@@ -25,7 +25,9 @@ export const config = {
   abiDir: env("ABI_DIR", join(backendRoot, "abi")),
   databaseUrl: env("DATABASE_URL", ""),
   indexerPollMs: Number(env("INDEXER_POLL_MS", 3000)),
-  indexerBatchBlocks: Number(env("INDEXER_BATCH_BLOCKS", 2000)),
+  // Blocks per eth_getLogs request. Small on purpose: a seeded block carries up to ~2,500 events, and
+  // the whole seeded chain in one request (115,000 events) runs Node out of heap.
+  indexerBatchBlocks: Number(env("INDEXER_BATCH_BLOCKS", 5)),
   sessionTtlSeconds: Number(env("SESSION_TTL_SECONDS", 12 * 3600)),
   demoMode: env("DEMO_MODE", "true") === "true",
   demoAccountsPath: env("DEMO_ACCOUNTS_FILE", join(repoRoot, "contracts", "deployments", "demo-accounts.json")),

@@ -32,8 +32,13 @@ services:
       - --chain-id=31337
       - --accounts=70
       - --state=/home/foundry/anvil-state.json
-      - --state-interval=60
-    stop_signal: SIGINT          # anvil writes its final state dump on Ctrl-C
+      # Keep only the latest state in memory. Anvil otherwise holds a full copy of the state for every
+      # block, which the seed (27,103 accounts, some 320 blocks) grows past 5 GB.
+      - --prune-history
+    # The state file (about 400 MB once seeded) is written when anvil stops, not on a timer: a dump
+    # mid-seed costs memory. Give that final write time before Docker kills the container.
+    stop_signal: SIGINT
+    stop_grace_period: 2m
     volumes:
       - chain:/home/foundry
     healthcheck:

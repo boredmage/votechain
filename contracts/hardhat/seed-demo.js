@@ -68,6 +68,21 @@ const GAS = {
 const chunks = (list, size) => Array.from({ length: Math.ceil(list.length / size) }, (_, i) => list.slice(i * size, (i + 1) * size));
 const send = async (p) => (await p).wait();
 
+/**
+ * Retries a read (or a gas estimate) the node answered with BlockOutOfRangeError. A node that keeps
+ * no historical state (anvil --prune-history) resolves "latest" to a block number first, and fails
+ * when the next block is mined before it reads the state. Nothing was sent, so asking again is safe.
+ */
+async function latest(fn) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt >= 5 || !/BlockOutOfRange/.test(`${err?.message} ${err?.info?.error?.message} ${err?.error?.message}`)) throw err;
+    }
+  }
+}
+
 /** Runs `fn` over `items` with at most `limit` in flight. */
 async function pool(items, limit, fn) {
   let next = 0;
@@ -244,7 +259,7 @@ async function main() {
 
   if (PREFILL !== "none") {
     const signAll = async (level, unitId) => {
-      const h = await verification.currentFiguresHash(level, unitId);
+      const h = await latest(() => verification.currentFiguresHash(level, unitId));
       await Promise.all(
         PARTIES.map((_, p) => send(verification.connect(wallet(agentIndex[`${level}-${unitId}-${p + 1}`])).signResult(level, unitId, h, { ...FEES, gasLimit: GAS.sign }))),
       );
@@ -254,9 +269,9 @@ async function main() {
       await signAll(Level.PollingUnit, pu.id);
     };
     const collate = async (level, unitId, officerIndex) => {
-      const [agg, complete] = await collation.computeAggregate(level, unitId);
+      const [agg, complete] = await latest(() => collation.computeAggregate(level, unitId));
       if (!complete) throw new Error(`${LEVEL_NAME[level]} ${unitId} incomplete`);
-      await send(collation.connect(wallet(officerIndex)).confirmCollation(level, unitId, toFigures(agg), DEMO_CID, FEES));
+      await latest(() => send(collation.connect(wallet(officerIndex)).confirmCollation(level, unitId, toFigures(agg), DEMO_CID, FEES)));
       await signAll(level, unitId);
     };
     const progress = async (label, items, fn) => {

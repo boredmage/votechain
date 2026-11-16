@@ -215,6 +215,12 @@ start_stack() {
     $COMPOSE logs --tail=60 deployer || true
     die "See above. Fix it, then run ./deploy.sh again."
   fi
+  # Anvil writes its state file only when it stops. After a fresh seed there is none yet, so restart
+  # the chain once: that saves the election to the volume and frees the memory the seed used.
+  if ! docker exec clearcount-prod-chain test -s /home/foundry/anvil-state.json 2>/dev/null; then
+    log "Saving the seeded chain to disk (restarting the chain once)..."
+    $COMPOSE restart chain
+  fi
 }
 
 # --- Subcommands ----------------------------------------------------------------
