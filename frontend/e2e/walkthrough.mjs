@@ -29,12 +29,33 @@ page.on("pageerror", (e) => { errors.push(`pageerror: ${e.message}`); console.lo
 page.on("console", (m) => { if (m.type() === "error" && !/404|503/.test(m.text())) { errors.push(`console: ${m.text()}`); console.log("CONSOLE", m.text().slice(0, 400)); } });
 process.on("uncaughtException", async (e) => { console.log("FAILED:", e.message.split("\n")[0]); try { await page.screenshot({ path: `${OUT}/zz-failure.png`, fullPage: true }); } catch {} process.exit(1); });
 
-const shot = (name) => page.screenshot({ path: `${OUT}/${name}.png`, fullPage: true });
+// A full-page capture stitches the page from scrolled tiles, so the sticky top bar would be drawn
+// wherever the page happened to be scrolled. Pin it to the top of the document for the capture.
+const shot = async (name) => {
+  // let every panel finish loading first (the auditor's chain trace takes a while at full scale)
+  await page.waitForFunction(() => !/Loading/.test(document.body.innerText), null, { timeout: 120000 }).catch(() => console.log(`still loading at ${name}`));
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const style = await page.addStyleTag({ content: "[data-testid=topbar]{position:static !important}" });
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: true });
+  await style.evaluate((el) => el.remove());
+};
 const pickRole = async (index) => {
-  // HeroUI ComboBox: type the account number to filter, then pick the option
-  await page.click("[data-testid=role-switcher-input]");
-  await page.keyboard.type(`#${index}`);
-  await page.click(`[data-testid=role-option-${index}]`);
+  // HeroUI ComboBox: type the account number to filter, then pick the option. The list holds 27,103
+  // accounts and occasionally has not rendered the option in time, so try a few times.
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await page.click("[data-testid=role-switcher-input]", { timeout: 10000 });
+      await page.keyboard.press("ControlOrMeta+a");
+      await page.keyboard.type(`#${index}`);
+      await page.click(`[data-testid=role-option-${index}]`, { timeout: 10000 });
+      break;
+    } catch (err) {
+      if (attempt >= 4) throw err;
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(1000);
+    }
+  }
   await page.waitForSelector("[data-testid=wallet-identity]", { timeout: 10000 });
   await page.waitForTimeout(1200);
 };
